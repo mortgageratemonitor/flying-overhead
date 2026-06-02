@@ -553,6 +553,8 @@
     <span class="refresh-timer" id="timerDisplay">REFRESH IN --s</span>
     <div class="vr"></div>
     <span id="lastUpdate">--:--:--</span>
+    <div class="vr"></div>
+    <button class="btn" style="padding:0.2rem 0.5rem;font-size:0.85rem;" onclick="showProxyModal()" title="Set proxy URL">⚙</button>
   </div>
 </header>
 
@@ -820,6 +822,22 @@ function detectLocation() {
   });
 }
 
+function getProxyUrl() {
+  return localStorage.getItem('nearbyair_proxy') || '';
+}
+
+function showProxyModal() {
+  document.getElementById('proxyModal').style.display = 'flex';
+}
+
+function saveProxy() {
+  const val = document.getElementById('proxyInput').value.trim().replace(/\/$/, '');
+  if (!val) return;
+  localStorage.setItem('nearbyair_proxy', val);
+  document.getElementById('proxyModal').style.display = 'none';
+  loadFlights();
+}
+
 function loadFlights() {
   const latVal = parseFloat(document.getElementById('lat').value);
   const lonVal = parseFloat(document.getElementById('lon').value);
@@ -830,20 +848,28 @@ function loadFlights() {
   userLat = latVal;
   userLon = lonVal;
 
+  const proxyBase = getProxyUrl();
+  if (!proxyBase) {
+    showProxyModal();
+    setStatus('error', 'NO PROXY');
+    return;
+  }
+
   const deg = parseFloat(document.getElementById('radius').value);
   const latMin = userLat - deg, latMax = userLat + deg;
   const lonMin = userLon - deg * 1.5, lonMax = userLon + deg * 1.5;
 
   setStatus('loading', 'FETCHING...');
 
-  const url = `https://opensky-network.org/api/states/all?lamin=${latMin}&lamax=${latMax}&lomin=${lonMin}&lomax=${lonMax}`;
+  const url = `${proxyBase}/flights?lamin=${latMin}&lamax=${latMax}&lomin=${lonMin}&lomax=${lonMax}`;
 
   fetch(url)
     .then(r => {
-      if (!r.ok) throw new Error('API error ' + r.status);
+      if (!r.ok) throw new Error(`Server error ${r.status}`);
       return r.json();
     })
     .then(data => {
+      if (data.error) throw new Error(data.error);
       processFlights(data.states || []);
       setStatus('live', 'LIVE');
       const now = new Date();
@@ -858,8 +884,8 @@ function loadFlights() {
         <tr><td colspan="8">
           <div class="empty-state">
             <div class="empty-icon">⚠</div>
-            <div class="empty-title">API ERROR</div>
-            <div class="empty-sub">OpenSky Network may be rate-limiting. Wait 10–15 seconds and try again. Anonymous users are limited to ~400 requests/day.</div>
+            <div class="empty-title">PROXY ERROR</div>
+            <div class="empty-sub">${err.message}. Click the ⚙ icon to re-enter your Render proxy URL.</div>
           </div>
         </td></tr>`;
     });
@@ -1055,6 +1081,29 @@ document.getElementById('sortBy').addEventListener('change', () => {
     renderRadar();
     selectFlight(0);
   }
+});
+</script>
+
+<div id="proxyModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9000;align-items:center;justify-content:center;">
+  <div style="background:#0f1318;border:1px solid #1e2530;border-radius:8px;padding:2rem;max-width:480px;width:90%;font-family:'Rajdhani',sans-serif;">
+    <div style="font-family:'Share Tech Mono',monospace;font-size:0.8rem;letter-spacing:0.2em;color:#06b6d4;margin-bottom:1rem;">// PROXY CONFIGURATION</div>
+    <p style="font-size:0.9rem;color:#94a3b8;margin-bottom:0.5rem;line-height:1.6;">
+      Enter your <strong style="color:#e2e8f0">Render.com proxy URL</strong> (e.g. <code style="color:#f59e0b;font-size:0.8rem">https://nearbyair-proxy.onrender.com</code>). The proxy handles OpenSky OAuth2 authentication and CORS.
+    </p>
+    <p style="font-size:0.8rem;color:#475569;margin-bottom:1.25rem;">Your URL is saved locally in your browser — never sent anywhere else.</p>
+    <input id="proxyInput" type="url" placeholder="https://your-proxy.onrender.com" style="width:100%;margin-bottom:1rem;background:#070a0d;border:1px solid #1e2530;color:#e2e8f0;padding:0.5rem 0.75rem;font-family:'Share Tech Mono',monospace;font-size:0.8rem;border-radius:4px;outline:none;">
+    <div style="display:flex;gap:0.75rem;justify-content:flex-end;">
+      <button onclick="document.getElementById('proxyModal').style.display='none'" style="background:transparent;border:1px solid #1e2530;color:#64748b;padding:0.4rem 1rem;font-family:'Share Tech Mono',monospace;font-size:0.75rem;border-radius:4px;cursor:pointer;">CANCEL</button>
+      <button onclick="saveProxy()" style="background:transparent;border:1px solid #0e4a5a;color:#06b6d4;padding:0.4rem 1rem;font-family:'Share Tech Mono',monospace;font-size:0.75rem;border-radius:4px;cursor:pointer;">SAVE & CONNECT</button>
+    </div>
+  </div>
+</div>
+<script>
+window.addEventListener('load', () => {
+  const saved = localStorage.getItem('nearbyair_proxy') || '';
+  const inp = document.getElementById('proxyInput');
+  if (inp) inp.value = saved;
+  if (!saved) showProxyModal();
 });
 </script>
 </body>
