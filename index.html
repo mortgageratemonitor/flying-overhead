@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NearbyAir — Live Flight Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0c0f;
+    --panel: #0f1318;
+    --panel-border: #1e2530;
+    --led-on: #e8f4ff;
+    --led-dim: #1a2535;
+    --amber: #f59e0b;
+    --amber-dim: #7c4f06;
+    --green: #22c55e;
+    --green-dim: #0f4a22;
+    --cyan: #06b6d4;
+    --cyan-dim: #084552;
+    --red: #ef4444;
+    --muted: #4a5568;
+    --text: #e2e8f0;
+    --text-dim: #64748b;
+    --scan-line: rgba(255,255,255,0.015);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Rajdhani', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      var(--scan-line) 2px,
+      var(--scan-line) 4px
+    );
+    pointer-events: none;
+    z-index: 9999;
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--panel-border);
+    background: var(--panel);
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .logo-icon {
+    width: 32px;
+    height: 32px;
+    position: relative;
+  }
+
+  .logo-text {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1.1rem;
+    color: var(--cyan);
+    letter-spacing: 0.1em;
+  }
+
+  .logo-sub {
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    display: block;
+    margin-top: -2px;
+  }
+
+  .status-bar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.75rem;
+    font-family: 'Share Tech Mono', monospace;
+    color: var(--text-dim);
+  }
+
+  .status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--muted);
+    display: inline-block;
+    margin-right: 0.4rem;
+    transition: background 0.3s;
+  }
+
+  .status-dot.live { background: var(--green); box-shadow: 0 0 6px var(--green); animation: pulse-dot 2s infinite; }
+  .status-dot.loading { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
+  .status-dot.error { background: var(--red); }
+
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .controls {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-wrap: wrap;
+    padding: 0.75rem 1.5rem;
+    border-bottom: 1px solid var(--panel-border);
+    background: #0c0f14;
+  }
+
+  .ctrl-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .ctrl-label {
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  input[type="number"], select {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    color: var(--text);
+    padding: 0.35rem 0.6rem;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.8rem;
+    border-radius: 4px;
+    width: 80px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  input[type="number"]:focus, select:focus {
+    border-color: var(--cyan);
+  }
+
+  select { width: auto; cursor: pointer; }
+
+  .btn {
+    background: transparent;
+    border: 1px solid var(--cyan-dim);
+    color: var(--cyan);
+    padding: 0.35rem 0.8rem;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+
+  .btn:hover { background: var(--cyan-dim); border-color: var(--cyan); }
+  .btn:active { transform: scale(0.97); }
+
+  .btn.detect {
+    border-color: var(--amber-dim);
+    color: var(--amber);
+  }
+  .btn.detect:hover { background: var(--amber-dim); border-color: var(--amber); }
+
+  .main {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 0;
+    min-height: calc(100vh - 120px);
+  }
+
+  @media (max-width: 800px) {
+    .main { grid-template-columns: 1fr; }
+    .sidebar { border-left: none; border-top: 1px solid var(--panel-border); }
+  }
+
+  .board {
+    padding: 1rem 1.5rem;
+    overflow: auto;
+  }
+
+  .board-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+
+  .section-title {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+  }
+
+  .count-badge {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--cyan);
+    background: var(--cyan-dim);
+    border-radius: 3px;
+    padding: 1px 8px;
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+
+  thead th {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    padding: 0.5rem 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid var(--panel-border);
+    white-space: nowrap;
+  }
+
+  tbody tr {
+    border-bottom: 1px solid #111518;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  tbody tr:hover { background: #141a22; }
+  tbody tr.selected { background: #101c28; border-left: 2px solid var(--cyan); }
+
+  tbody td {
+    padding: 0.6rem 0.75rem;
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+
+  .callsign {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.9rem;
+    color: var(--led-on);
+    letter-spacing: 0.05em;
+  }
+
+  .airline-badge {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 3px;
+    font-size: 0.7rem;
+    font-family: 'Share Tech Mono', monospace;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+  }
+
+  .alt-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .alt-fill {
+    height: 4px;
+    background: var(--cyan);
+    border-radius: 2px;
+    min-width: 2px;
+    transition: width 0.5s ease;
+  }
+
+  .alt-val {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    min-width: 52px;
+  }
+
+  .speed-val {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--amber);
+  }
+
+  .hdg-arrow {
+    display: inline-block;
+    font-size: 1rem;
+    line-height: 1;
+  }
+
+  .dist-val {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--green);
+  }
+
+  .country-flag {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+  }
+
+  .on-ground {
+    font-size: 0.65rem;
+    color: var(--amber);
+    font-family: 'Share Tech Mono', monospace;
+    letter-spacing: 0.05em;
+  }
+
+  .sidebar {
+    border-left: 1px solid var(--panel-border);
+    background: var(--panel);
+    padding: 1rem;
+    overflow-y: auto;
+  }
+
+  .featured-panel {
+    margin-bottom: 1.5rem;
+  }
+
+  .led-display {
+    background: #060a0d;
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    padding: 1rem;
+    font-family: 'Share Tech Mono', monospace;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .led-display::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      0deg, transparent, transparent 3px, rgba(255,255,255,0.012) 3px, rgba(255,255,255,0.012) 4px
+    );
+    pointer-events: none;
+  }
+
+  .led-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0.35rem;
+  }
+
+  .led-key {
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #2a3d52;
+  }
+
+  .led-val {
+    font-size: 0.85rem;
+    color: var(--led-on);
+  }
+
+  .led-val.big {
+    font-size: 1.4rem;
+    color: #fff;
+    text-shadow: 0 0 12px rgba(6, 182, 212, 0.6);
+  }
+
+  .led-val.airline {
+    font-size: 1rem;
+  }
+
+  .led-divider {
+    border: none;
+    border-top: 1px solid #1a2535;
+    margin: 0.6rem 0;
+  }
+
+  .led-route {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 1.1rem;
+    color: var(--led-on);
+    padding: 0.4rem 0;
+  }
+
+  .led-arrow { color: #2a3d52; }
+
+  .led-airport {
+    font-size: 1.4rem;
+    letter-spacing: 0.05em;
+    color: #fff;
+  }
+
+  .led-blink {
+    animation: blink 1s step-end infinite;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  .mini-radar {
+    width: 100%;
+    aspect-ratio: 1;
+    max-width: 280px;
+    margin: 0 auto;
+    position: relative;
+    display: block;
+  }
+
+  .stat-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+
+  .stat-card {
+    background: #080c10;
+    border: 1px solid var(--panel-border);
+    border-radius: 5px;
+    padding: 0.6rem 0.75rem;
+  }
+
+  .stat-label {
+    font-size: 0.6rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    font-family: 'Share Tech Mono', monospace;
+    display: block;
+    margin-bottom: 0.2rem;
+  }
+
+  .stat-value {
+    font-size: 1.1rem;
+    font-family: 'Share Tech Mono', monospace;
+    color: var(--cyan);
+  }
+
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    gap: 1rem;
+    color: var(--text-dim);
+    text-align: center;
+  }
+
+  .empty-icon {
+    font-size: 3rem;
+    opacity: 0.3;
+  }
+
+  .empty-title {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.9rem;
+    letter-spacing: 0.1em;
+  }
+
+  .empty-sub {
+    font-size: 0.8rem;
+    max-width: 300px;
+    line-height: 1.5;
+  }
+
+  .ticker-wrap {
+    overflow: hidden;
+    border-top: 1px solid var(--panel-border);
+    padding: 0.4rem 1.5rem;
+    background: #070a0d;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--text-dim);
+    white-space: nowrap;
+  }
+
+  .ticker-inner {
+    display: inline-block;
+    animation: ticker 30s linear infinite;
+  }
+
+  @keyframes ticker {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  .ticker-item { margin-right: 4rem; }
+
+  .refresh-timer {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+  }
+
+  .vr { width: 1px; height: 20px; background: var(--panel-border); }
+
+  .update-flash {
+    animation: flash 0.4s ease;
+  }
+
+  @keyframes flash {
+    0% { background: #0f2a1a; }
+    100% { background: transparent; }
+  }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="logo">
+    <svg class="logo-icon" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="16" cy="16" r="14" stroke="#06b6d4" stroke-width="1" opacity="0.3"/>
+      <circle cx="16" cy="16" r="9" stroke="#06b6d4" stroke-width="0.5" opacity="0.4"/>
+      <circle cx="16" cy="16" r="4" stroke="#06b6d4" stroke-width="0.5" opacity="0.5"/>
+      <line x1="16" y1="2" x2="16" y2="30" stroke="#06b6d4" stroke-width="0.5" opacity="0.2"/>
+      <line x1="2" y1="16" x2="30" y2="16" stroke="#06b6d4" stroke-width="0.5" opacity="0.2"/>
+      <path d="M16 10 L19 17 L16 15 L13 17 Z" fill="#06b6d4" style="transform-origin:16px 16px; animation: spin 4s linear infinite;"/>
+    </svg>
+    <div>
+      <div class="logo-text">NEARBYAIR</div>
+      <span class="logo-sub">Live ADS-B Tracker</span>
+    </div>
+  </div>
+  <div class="status-bar">
+    <span id="statusIndicator"><span class="status-dot" id="statusDot"></span><span id="statusText">OFFLINE</span></span>
+    <div class="vr"></div>
+    <span class="refresh-timer" id="timerDisplay">REFRESH IN --s</span>
+    <div class="vr"></div>
+    <span id="lastUpdate">--:--:--</span>
+  </div>
+</header>
+
+<div class="controls">
+  <div class="ctrl-group">
+    <span class="ctrl-label">LAT</span>
+    <input type="number" id="lat" placeholder="40.7128" step="0.0001" value="">
+  </div>
+  <div class="ctrl-group">
+    <span class="ctrl-label">LON</span>
+    <input type="number" id="lon" placeholder="-74.0060" step="0.0001" value="">
+  </div>
+  <div class="ctrl-group">
+    <span class="ctrl-label">RADIUS</span>
+    <select id="radius">
+      <option value="1.5">~100km</option>
+      <option value="2" selected>~150km</option>
+      <option value="3">~200km</option>
+      <option value="4">~300km</option>
+    </select>
+  </div>
+  <div class="ctrl-group">
+    <span class="ctrl-label">SORT</span>
+    <select id="sortBy">
+      <option value="distance">Distance</option>
+      <option value="altitude">Altitude</option>
+      <option value="speed">Speed</option>
+    </select>
+  </div>
+  <button class="btn detect" onclick="detectLocation()">⊕ MY LOCATION</button>
+  <button class="btn" onclick="loadFlights()">↺ REFRESH</button>
+</div>
+
+<div class="main">
+  <div class="board">
+    <div class="board-header">
+      <span class="section-title">// aircraft overhead</span>
+      <span class="count-badge" id="countBadge">0 tracked</span>
+    </div>
+    <div class="table-wrap">
+      <table id="flightTable">
+        <thead>
+          <tr>
+            <th>Callsign</th>
+            <th>Airline</th>
+            <th>Origin</th>
+            <th>Altitude</th>
+            <th>Speed</th>
+            <th>Heading</th>
+            <th>Distance</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="flightBody">
+          <tr>
+            <td colspan="8">
+              <div class="empty-state">
+                <div class="empty-icon">✈</div>
+                <div class="empty-title">NO SIGNAL</div>
+                <div class="empty-sub">Set your location and press Refresh to begin tracking nearby aircraft.</div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="sidebar">
+    <div class="featured-panel">
+      <div class="section-title" style="margin-bottom:0.75rem;">// nearest aircraft</div>
+      <div class="led-display" id="ledDisplay">
+        <div class="led-row">
+          <span class="led-key">CALLSIGN</span>
+          <span class="led-val big" id="ledCallsign">------<span class="led-blink">_</span></span>
+        </div>
+        <hr class="led-divider">
+        <div class="led-row">
+          <span class="led-key">AIRLINE</span>
+          <span class="led-val airline" id="ledAirline">WAITING FOR DATA</span>
+        </div>
+        <div class="led-route" id="ledRoute">
+          <span class="led-airport">---</span>
+          <span class="led-arrow"> ──────► </span>
+          <span class="led-airport">---</span>
+        </div>
+        <hr class="led-divider">
+        <div class="led-row">
+          <span class="led-key">ALTITUDE</span>
+          <span class="led-val" id="ledAlt">-- ft</span>
+        </div>
+        <div class="led-row">
+          <span class="led-key">SPEED</span>
+          <span class="led-val" id="ledSpeed">-- kts</span>
+        </div>
+        <div class="led-row">
+          <span class="led-key">HEADING</span>
+          <span class="led-val" id="ledHdg">---°</span>
+        </div>
+        <div class="led-row">
+          <span class="led-key">DISTANCE</span>
+          <span class="led-val" id="ledDist">-- km away</span>
+        </div>
+        <div class="led-row">
+          <span class="led-key">COUNTRY</span>
+          <span class="led-val" id="ledCountry">---</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title" style="margin-bottom:0.75rem;">// radar scope</div>
+    <svg class="mini-radar" id="radarSvg" viewBox="0 0 280 280">
+      <circle cx="140" cy="140" r="130" fill="none" stroke="#0f2535" stroke-width="1"/>
+      <circle cx="140" cy="140" r="86" fill="none" stroke="#0f2535" stroke-width="0.5"/>
+      <circle cx="140" cy="140" r="43" fill="none" stroke="#0f2535" stroke-width="0.5"/>
+      <line x1="140" y1="10" x2="140" y2="270" stroke="#0f2535" stroke-width="0.5"/>
+      <line x1="10" y1="140" x2="270" y2="140" stroke="#0f2535" stroke-width="0.5"/>
+      <text x="142" y="16" fill="#1a3045" font-size="8" font-family="monospace">N</text>
+      <text x="142" y="278" fill="#1a3045" font-size="8" font-family="monospace">S</text>
+      <text x="14" y="144" fill="#1a3045" font-size="8" font-family="monospace">W</text>
+      <text x="264" y="144" fill="#1a3045" font-size="8" font-family="monospace">E</text>
+      <circle cx="140" cy="140" r="4" fill="#06b6d4" opacity="0.8"/>
+      <g id="radarBlip" style="transform-origin:140px 140px; animation: radarSpin 4s linear infinite;">
+        <line x1="140" y1="140" x2="140" y2="10" stroke="url(#sweep)" stroke-width="1.5" opacity="0.7"/>
+      </g>
+      <defs>
+        <linearGradient id="sweep" x1="0" y1="1" x2="0" y2="0">
+          <stop offset="0%" stop-color="#06b6d4" stop-opacity="0.8"/>
+          <stop offset="100%" stop-color="#06b6d4" stop-opacity="0"/>
+        </linearGradient>
+      </defs>
+      <g id="radarPlanes"></g>
+    </svg>
+
+    <div class="stat-grid">
+      <div class="stat-card">
+        <span class="stat-label">Total Tracked</span>
+        <span class="stat-value" id="statTotal">0</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Airborne</span>
+        <span class="stat-value" id="statAirborne">0</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Avg Altitude</span>
+        <span class="stat-value" id="statAvgAlt">-- ft</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Avg Speed</span>
+        <span class="stat-value" id="statAvgSpd">-- kt</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="ticker-wrap">
+  <div class="ticker-inner" id="tickerInner">
+    <span class="ticker-item">NEARBYAIR v1.0</span>
+    <span class="ticker-item">DATA: OPENSKY NETWORK (ADS-B)</span>
+    <span class="ticker-item">UPDATES EVERY 30 SECONDS</span>
+    <span class="ticker-item">ANONYMOUS API — NO KEY REQUIRED</span>
+    <span class="ticker-item">ADS-B DATA IS PUBLIC BROADCAST</span>
+    <span class="ticker-item">SET YOUR LOCATION TO BEGIN TRACKING</span>
+    <span class="ticker-item">NEARBYAIR v1.0</span>
+    <span class="ticker-item">DATA: OPENSKY NETWORK (ADS-B)</span>
+    <span class="ticker-item">UPDATES EVERY 30 SECONDS</span>
+    <span class="ticker-item">ANONYMOUS API — NO KEY REQUIRED</span>
+    <span class="ticker-item">ADS-B DATA IS PUBLIC BROADCAST</span>
+    <span class="ticker-item">SET YOUR LOCATION TO BEGIN TRACKING</span>
+  </div>
+</div>
+
+<style>
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes radarSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+</style>
+
+<script>
+const AIRLINE_COLORS = {
+  'UAL': { bg: '#001f5b', text: '#4a90d9', name: 'United Airlines' },
+  'DAL': { bg: '#003a70', text: '#e31837', name: 'Delta Air Lines' },
+  'AAL': { bg: '#0078d4', text: '#ffffff', name: 'American Airlines' },
+  'SWA': { bg: '#ffbf27', text: '#304cb2', name: 'Southwest Airlines' },
+  'BAW': { bg: '#002f6c', text: '#eb2226', name: 'British Airways' },
+  'DLH': { bg: '#ffd700', text: '#003366', name: 'Lufthansa' },
+  'AFR': { bg: '#002395', text: '#ffffff', name: 'Air France' },
+  'KLM': { bg: '#009bde', text: '#ffffff', name: 'KLM' },
+  'UAE': { bg: '#d4af37', text: '#8b0000', name: 'Emirates' },
+  'RYR': { bg: '#073590', text: '#f9c400', name: 'Ryanair' },
+  'EZY': { bg: '#ff6600', text: '#ffffff', name: 'easyJet' },
+  'THY': { bg: '#c8102e', text: '#ffffff', name: 'Turkish Airlines' },
+  'SIA': { bg: '#0072c6', text: '#f6c321', name: 'Singapore Airlines' },
+  'QFA': { bg: '#c8102e', text: '#ffffff', name: 'Qantas' },
+  'CPA': { bg: '#007b5e', text: '#ffffff', name: 'Cathay Pacific' },
+  'ANA': { bg: '#002f87', text: '#ffffff', name: 'ANA' },
+  'JAL': { bg: '#c8102e', text: '#ffffff', name: 'Japan Airlines' },
+  'FDX': { bg: '#4d148c', text: '#ff6200', name: 'FedEx' },
+  'UPS': { bg: '#340f02', text: '#ff9900', name: 'UPS' },
+  'ASA': { bg: '#01426a', text: '#ffffff', name: 'Alaska Airlines' },
+  'SKW': { bg: '#0033a0', text: '#ffffff', name: 'SkyWest' },
+  'ENY': { bg: '#003087', text: '#ffffff', name: 'Envoy Air' },
+  'JBU': { bg: '#003876', text: '#ffffff', name: 'JetBlue' },
+  'FFT': { bg: '#6138b0', text: '#ffffff', name: 'Frontier Airlines' },
+  'NKS': { bg: '#f9c80e', text: '#000000', name: 'Spirit Airlines' },
+  'VRD': { bg: '#c0392b', text: '#ffffff', name: 'Virgin America' },
+  'WJA': { bg: '#00a1e0', text: '#ffffff', name: 'WestJet' },
+  'ACA': { bg: '#cc0000', text: '#ffffff', name: 'Air Canada' },
+  'IBE': { bg: '#cc0000', text: '#f9c400', name: 'Iberia' },
+  'VLG': { bg: '#f4c300', text: '#e00025', name: 'Vueling' },
+};
+
+function getAirlineInfo(callsign) {
+  if (!callsign) return { bg: '#1a2535', text: '#4a5568', name: 'Unknown' };
+  const prefix = callsign.replace(/\d+$/, '').trim().toUpperCase();
+  return AIRLINE_COLORS[prefix] || { bg: '#1a2535', text: '#64748b', name: prefix || 'Unknown' };
+}
+
+function getHeadingArrow(hdg) {
+  const arrows = ['↑','↗','→','↘','↓','↙','←','↖'];
+  return arrows[Math.round(hdg / 45) % 8];
+}
+
+function metersToFeet(m) { return Math.round(m * 3.28084); }
+function msToKnots(ms) { return Math.round(ms * 1.94384); }
+function haversine(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLon/2)**2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+let userLat = null, userLon = null;
+let flights = [];
+let selectedIdx = 0;
+let refreshInterval = null;
+let countdown = 30;
+let countdownInterval = null;
+
+function setStatus(state, text) {
+  const dot = document.getElementById('statusDot');
+  const txt = document.getElementById('statusText');
+  dot.className = 'status-dot ' + state;
+  txt.textContent = text;
+}
+
+function detectLocation() {
+  setStatus('loading', 'LOCATING...');
+  navigator.geolocation.getCurrentPosition(pos => {
+    userLat = pos.coords.latitude;
+    userLon = pos.coords.longitude;
+    document.getElementById('lat').value = userLat.toFixed(4);
+    document.getElementById('lon').value = userLon.toFixed(4);
+    setStatus('', 'LOCATED');
+    loadFlights();
+  }, err => {
+    setStatus('error', 'GPS FAIL');
+    alert('Could not get your location. Please enter coordinates manually.');
+  });
+}
+
+function loadFlights() {
+  const latVal = parseFloat(document.getElementById('lat').value);
+  const lonVal = parseFloat(document.getElementById('lon').value);
+  if (isNaN(latVal) || isNaN(lonVal)) {
+    alert('Please enter valid coordinates or use "My Location"');
+    return;
+  }
+  userLat = latVal;
+  userLon = lonVal;
+
+  const deg = parseFloat(document.getElementById('radius').value);
+  const latMin = userLat - deg, latMax = userLat + deg;
+  const lonMin = userLon - deg * 1.5, lonMax = userLon + deg * 1.5;
+
+  setStatus('loading', 'FETCHING...');
+
+  const url = `https://opensky-network.org/api/states/all?lamin=${latMin}&lamax=${latMax}&lomin=${lonMin}&lomax=${lonMax}`;
+
+  fetch(url)
+    .then(r => {
+      if (!r.ok) throw new Error('API error ' + r.status);
+      return r.json();
+    })
+    .then(data => {
+      processFlights(data.states || []);
+      setStatus('live', 'LIVE');
+      const now = new Date();
+      document.getElementById('lastUpdate').textContent =
+        now.toTimeString().slice(0,8);
+      resetCountdown();
+    })
+    .catch(err => {
+      setStatus('error', 'ERROR');
+      console.error(err);
+      document.getElementById('flightBody').innerHTML = `
+        <tr><td colspan="8">
+          <div class="empty-state">
+            <div class="empty-icon">⚠</div>
+            <div class="empty-title">API ERROR</div>
+            <div class="empty-sub">OpenSky Network may be rate-limiting. Wait 10–15 seconds and try again. Anonymous users are limited to ~400 requests/day.</div>
+          </div>
+        </td></tr>`;
+    });
+}
+
+function processFlights(states) {
+  const sortBy = document.getElementById('sortBy').value;
+
+  flights = states
+    .filter(s => s[5] != null && s[6] != null)
+    .map(s => {
+      const lat = s[6], lon = s[5];
+      const dist = (userLat && userLon) ? haversine(userLat, userLon, lat, lon) : 0;
+      return {
+        icao: s[0],
+        callsign: (s[1] || '').trim(),
+        country: s[2] || '—',
+        lat, lon,
+        altM: s[7] || s[13] || 0,
+        onGround: s[8],
+        speed: s[9] || 0,
+        heading: s[10] || 0,
+        vertRate: s[11] || 0,
+        dist: Math.round(dist),
+      };
+    });
+
+  if (sortBy === 'distance') flights.sort((a, b) => a.dist - b.dist);
+  else if (sortBy === 'altitude') flights.sort((a, b) => b.altM - a.altM);
+  else if (sortBy === 'speed') flights.sort((a, b) => b.speed - a.speed);
+
+  document.getElementById('countBadge').textContent = flights.length + ' tracked';
+
+  renderTable();
+  renderStats();
+  if (flights.length > 0) {
+    selectFlight(0);
+    renderRadar();
+  }
+  updateTicker();
+}
+
+function renderTable() {
+  const tbody = document.getElementById('flightBody');
+  if (flights.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8">
+      <div class="empty-state">
+        <div class="empty-icon">✈</div>
+        <div class="empty-title">NO AIRCRAFT FOUND</div>
+        <div class="empty-sub">No flights detected in this area. Try increasing the radius or check back later.</div>
+      </div></td></tr>`;
+    return;
+  }
+
+  const maxAlt = Math.max(...flights.map(f => f.altM)) || 1;
+
+  tbody.innerHTML = flights.map((f, i) => {
+    const airline = getAirlineInfo(f.callsign);
+    const altFt = metersToFeet(f.altM);
+    const kts = msToKnots(f.speed);
+    const altPct = Math.min(100, (f.altM / maxAlt) * 100);
+    const arrow = getHeadingArrow(f.heading);
+
+    return `<tr onclick="selectFlight(${i})" class="${i === selectedIdx ? 'selected' : ''}">
+      <td><span class="callsign">${f.callsign || f.icao}</span></td>
+      <td><span class="airline-badge" style="background:${airline.bg};color:${airline.text}">${f.callsign ? f.callsign.replace(/\d+$/,'').trim() || '—' : '—'}</span></td>
+      <td><span class="country-flag">${f.country}</span></td>
+      <td>
+        <div class="alt-bar">
+          <div class="alt-fill" style="width:${Math.round(altPct * 0.6)}px"></div>
+          <span class="alt-val">${f.onGround ? 'GND' : altFt.toLocaleString() + ' ft'}</span>
+        </div>
+      </td>
+      <td><span class="speed-val">${kts} kt</span></td>
+      <td><span class="hdg-arrow">${arrow}</span> <span style="font-family:monospace;font-size:0.75rem;color:var(--text-dim)">${Math.round(f.heading)}°</span></td>
+      <td><span class="dist-val">${f.dist} km</span></td>
+      <td>${f.onGround ? '<span class="on-ground">ON GND</span>' : '<span style="color:var(--green);font-size:0.65rem;font-family:monospace">AIRBORNE</span>'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function selectFlight(idx) {
+  selectedIdx = idx;
+  const f = flights[idx];
+  if (!f) return;
+
+  document.querySelectorAll('#flightBody tr').forEach((r, i) => {
+    r.classList.toggle('selected', i === idx);
+  });
+
+  const airline = getAirlineInfo(f.callsign);
+  const cs = f.callsign || f.icao;
+  const prefix = cs.replace(/\d+$/, '').trim().toUpperCase();
+  const num = cs.replace(/^[A-Z]+/, '').trim();
+
+  document.getElementById('ledCallsign').innerHTML = `${cs}<span class="led-blink">_</span>`;
+  document.getElementById('ledAirline').textContent = airline.name;
+  document.getElementById('ledAirline').style.color = airline.text;
+  document.getElementById('ledAlt').textContent = f.onGround ? 'ON GROUND' : metersToFeet(f.altM).toLocaleString() + ' ft';
+  document.getElementById('ledSpeed').textContent = msToKnots(f.speed) + ' kts';
+  document.getElementById('ledHdg').textContent = Math.round(f.heading) + '°  ' + getHeadingArrow(f.heading);
+  document.getElementById('ledDist').textContent = f.dist + ' km away';
+  document.getElementById('ledCountry').textContent = f.country;
+
+  document.getElementById('ledRoute').innerHTML = `
+    <span class="led-airport">${prefix || '---'}</span>
+    <span class="led-arrow"> ──► </span>
+    <span class="led-airport">${num || '---'}</span>
+  `;
+
+  document.getElementById('ledDisplay').classList.add('update-flash');
+  setTimeout(() => document.getElementById('ledDisplay').classList.remove('update-flash'), 400);
+}
+
+function renderStats() {
+  const airborne = flights.filter(f => !f.onGround);
+  document.getElementById('statTotal').textContent = flights.length;
+  document.getElementById('statAirborne').textContent = airborne.length;
+
+  if (airborne.length > 0) {
+    const avgAlt = Math.round(airborne.reduce((s, f) => s + f.altM, 0) / airborne.length);
+    const avgSpd = Math.round(airborne.reduce((s, f) => s + f.speed, 0) / airborne.length);
+    document.getElementById('statAvgAlt').textContent = metersToFeet(avgAlt).toLocaleString() + ' ft';
+    document.getElementById('statAvgSpd').textContent = msToKnots(avgSpd) + ' kt';
+  }
+}
+
+function renderRadar() {
+  const g = document.getElementById('radarPlanes');
+  g.innerHTML = '';
+  const cx = 140, cy = 140, r = 126;
+
+  if (!userLat || !userLon || flights.length === 0) return;
+
+  const deg = parseFloat(document.getElementById('radius').value);
+  const scale = r / (deg * 111);
+
+  flights.slice(0, 40).forEach((f, i) => {
+    const dx = (f.lon - userLon) * 111 * Math.cos(userLat * Math.PI / 180) * scale;
+    const dy = -(f.lat - userLat) * 111 * scale;
+    const px = cx + dx, py = cy + dy;
+    if (px < 12 || px > 268 || py < 12 || py > 268) return;
+
+    const isSelected = i === selectedIdx;
+    const col = isSelected ? '#06b6d4' : '#22c55e';
+    const size = isSelected ? 5 : 3;
+
+    const rad = f.heading * Math.PI / 180;
+    const tx = Math.round(px + Math.sin(rad) * 10);
+    const ty = Math.round(py - Math.cos(rad) * 10);
+
+    g.innerHTML += `
+      <line x1="${Math.round(px)}" y1="${Math.round(py)}" x2="${tx}" y2="${ty}" stroke="${col}" stroke-width="0.8" opacity="0.5"/>
+      <circle cx="${Math.round(px)}" cy="${Math.round(py)}" r="${size}" fill="${col}" opacity="${isSelected ? '1' : '0.7'}"/>
+      ${isSelected ? `<circle cx="${Math.round(px)}" cy="${Math.round(py)}" r="9" fill="none" stroke="${col}" stroke-width="1" opacity="0.4"/>` : ''}
+    `;
+  });
+}
+
+function updateTicker() {
+  if (flights.length === 0) return;
+  const items = flights.slice(0, 8).map(f => {
+    const kts = msToKnots(f.speed);
+    const altFt = metersToFeet(f.altM);
+    return `${(f.callsign || f.icao).padEnd(8)} │ ${f.dist}km │ ${altFt.toLocaleString()}ft │ ${kts}kt`;
+  });
+  const doubled = [...items, ...items].map(t => `<span class="ticker-item">${t}</span>`).join('');
+  document.getElementById('tickerInner').innerHTML = doubled;
+}
+
+function resetCountdown() {
+  clearInterval(countdownInterval);
+  countdown = 30;
+  countdownInterval = setInterval(() => {
+    countdown--;
+    document.getElementById('timerDisplay').textContent = `REFRESH IN ${countdown}s`;
+    if (countdown <= 0) {
+      clearInterval(countdownInterval);
+      document.getElementById('timerDisplay').textContent = 'REFRESHING...';
+      loadFlights();
+    }
+  }, 1000);
+}
+
+document.getElementById('sortBy').addEventListener('change', () => {
+  if (flights.length > 0) {
+    const sortBy = document.getElementById('sortBy').value;
+    if (sortBy === 'distance') flights.sort((a, b) => a.dist - b.dist);
+    else if (sortBy === 'altitude') flights.sort((a, b) => b.altM - a.altM);
+    else if (sortBy === 'speed') flights.sort((a, b) => b.speed - a.speed);
+    selectedIdx = 0;
+    renderTable();
+    renderRadar();
+    selectFlight(0);
+  }
+});
+</script>
+</body>
+</html>
