@@ -512,7 +512,9 @@ const AIRPORTS={
   "PSC":"Tri-Cities Airport","BFL":"Meadows Field Bakersfield","MFR":"Rogue Valley Intl-Medford",
   "IWA":"Phoenix-Mesa Gateway","GUP":"Gallup Municipal","PVU":"Provo Municipal",
   "AZA":"Phoenix-Mesa Gateway","CID":"The Eastern Iowa Airport",
-  "DVT":"Phoenix Deer Valley Airport","FAT":"Fresno Yosemite Intl"
+  "DVT":"Phoenix Deer Valley Airport","FAT":"Fresno Yosemite Intl",
+  "CUL":"Bachigualato Federal Intl","CNY":"Canyonlands Field","PVR":"Licenciado Gustavo Diaz Ordaz Intl",
+  "SGU":"St. George Regional Airport","STP":"St. Paul Downtown Holman Field","DRO":"Durango-La Plata County Airport"
 };
 
 const AIRLINE_DOMAINS={
@@ -641,24 +643,25 @@ function renderAirlineLogo(icao,ai){
   if(!wrap)return;
   if(!icao){
     wrap.innerHTML=ai?getFallbackBadgeHTML(icao,ai.bg,ai.text):'';
+    updateApiStatus('clearbit','idle','No airline code');
     return;
   }
   const logoUrl=getLogoUrl(icao);
   const bg=ai?ai.bg:'#1a2535';
   const tc=ai?ai.text:'#b8c8d8';
   const label=icao||'?';
+  const altText=ai?ai.name:icao;
+  // Inject img directly — native browser loading bypasses CORS restrictions
+  // onerror on the img element itself handles graceful fallback to badge
   updateApiStatus('clearbit','pending','Loading logo…');
-  wrap.innerHTML=`<div class="airline-logo-fallback" style="background:#0a0c0f;color:#2a3545;border:1px solid #2a3545;">✈</div>`;
-  const probe=new Image();
-  probe.onload=()=>{
-    updateApiStatus('clearbit','ok','Logo loaded');
-    wrap.innerHTML=`<div class="airline-logo-wrap"><img src="${logoUrl}" alt="${ai?ai.name:icao}"></div>`;
-  };
-  probe.onerror=()=>{
-    updateApiStatus('clearbit','err','No logo — using badge');
-    wrap.innerHTML=getFallbackBadgeHTML(label,bg,tc);
-  };
-  probe.src=logoUrl;
+  wrap.innerHTML=`<div class="airline-logo-wrap" id="logoImgWrap">
+    <img src="${logoUrl}" alt="${altText}"
+      onload="updateApiStatus('clearbit','ok','Logo loaded')"
+      onerror="
+        updateApiStatus('clearbit','err','No logo — using badge');
+        document.getElementById('logoImgWrap').outerHTML=getFallbackBadgeHTML('${label}','${bg}','${tc}');
+      ">
+  </div>`;
 }
 
 // ── API STATUS ─────────────────────────────────────────────────────────────
