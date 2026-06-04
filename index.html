@@ -65,7 +65,7 @@
   .legend-panel{display:none;position:absolute;top:calc(100% + 8px);right:0;background:#0f1318;border:1px solid var(--panel-border);border-radius:6px;padding:1rem;min-width:320px;z-index:500;}
   .legend-panel.open{display:block;}
   .legend-section-title{font-family:'Share Tech Mono',monospace;font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-dim);margin-bottom:0.6rem;}
-  .legend-divider{border:none;border-top:1px solid var(--panel-border);margin:0.75rem 0;}
+  .legend-divider{border:none;border-top:2px solid #4a6080;margin:0.85rem 0;}
   .legend-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.4rem 1rem;margin-bottom:0.25rem;}
   .legend-item{display:flex;align-items:center;gap:0.5rem;font-size:0.95rem;color:var(--text-dim);}
 
@@ -137,6 +137,8 @@
   .rp-stats{font-family:'Share Tech Mono',monospace;font-size:0.75rem;color:var(--text-dim);display:flex;flex-direction:column;gap:3px;}
   .rp-photo{width:100%;border-radius:4px;margin-top:0.5rem;display:block;max-height:110px;object-fit:cover;}
   .rp-photo-area{width:100%;height:75px;background:#080c10;border-radius:4px;margin-top:0.5rem;display:flex;align-items:center;justify-content:center;font-family:'Share Tech Mono',monospace;font-size:0.65rem;color:var(--text-dim);}
+  .rp-close{position:absolute;top:6px;right:8px;background:transparent;border:none;color:var(--text-dim);cursor:pointer;font-size:1rem;padding:0;line-height:1;}
+  .rp-close:hover{color:var(--text);}
 
   /* TABLE PANEL */
   .table-panel{background:var(--panel);border:1px solid var(--panel-border);border-radius:8px;padding:1rem 1.25rem;}
@@ -392,6 +394,8 @@
           <g id="radarPlanes"></g>
         </svg>
         <div class="radar-popup hidden" id="radarPopup"></div>
+
+<div class="radar-popup hidden" id="callsignPopup" style="position:fixed;pointer-events:auto;z-index:1000;"></div>
       </div>
       <div class="radar-controls">
         <button class="radar-btn" onclick="rotateRadar(-45)">&#9664;</button>
@@ -514,8 +518,70 @@ const AIRPORTS={
   "AZA":"Phoenix-Mesa Gateway","CID":"The Eastern Iowa Airport",
   "DVT":"Phoenix Deer Valley Airport","FAT":"Fresno Yosemite Intl",
   "CUL":"Bachigualato Federal Intl","CNY":"Canyonlands Field","PVR":"Licenciado Gustavo Diaz Ordaz Intl",
-  "SGU":"St. George Regional Airport","STP":"St. Paul Downtown Holman Field","DRO":"Durango-La Plata County Airport","RIL":"Garfield County Regional Airport","SJD":"Los Cabos Intl","YOW":"Ottawa Macdonald-Cartier Intl"
+  "SGU":"St. George Regional Airport","STP":"St. Paul Downtown Holman Field","DRO":"Durango-La Plata County Airport","RIL":"Garfield County Regional Airport","SJD":"Los Cabos Intl","YOW":"Ottawa Macdonald-Cartier Intl",
+  "PGA":"Page Municipal Airport","SCE":"University Park Airport","UNV":"University Park Airport",
+  "ABE":"Lehigh Valley Intl","MDT":"Harrisburg Intl","ERI":"Erie Intl",
+  "AOO":"Altoona-Blair County Airport","JST":"John Murtha Johnstown-Cambria County Airport",
+  "LBE":"Arnold Palmer Regional Airport","AVP":"Wilkes-Barre/Scranton Intl",
+  "DUJ":"DuBois Regional Airport","IPT":"Williamsport Regional Airport",
+  "BTP":"Butler County Airport","DYL":"Doylestown Airport",
+  "CXY":"Capital City Airport","AGC":"Allegheny County Airport",
+  "PTW":"Pottstown Municipal Airport","OQN":"Brandywine Airport",
+  "THV":"York Airport","MUI":"Muir Army Airfield",
+  "RDG":"Reading Regional Carl Spaatz Field","SEG":"Penn Valley Airport",
+  "WBW":"Wilkes-Barre Wyoming Valley Airport","ZER":"Schuylkill County Joe Zerbey Airport",
+  "UKT":"Quakertown Airport","RVL":"Reedsville Airport",
+  "LHV":"William T. Piper Memorial Airport","IDI":"Indiana County Airport",
+  "HZL":"Hazleton Regional Airport","FKL":"Venango Regional Airport",
+  "MPO":"Mount Pocono Airport","UCP":"New Castle Airport",
+  "PSB":"Mid-State Regional Airport","GKJ":"Port Meadville Airport",
+  "VVS":"Joseph A. Hardy Connellsville Airport","HMZ":"Bedford County Airport",
+  "XLL":"Allentown Queen City Municipal Airport","MQS":"Chester County G.O. Carlson Airport",
+  "CKZ":"Pennridge Airport","AFJ":"Washington County Airport",
+  "FIG":"Clearfield-Lawrence Airport","BVI":"Beaver County Airport",
+  "LUF":"Luke Air Force Base","BZN":"Bozeman Yellowstone Intl",
+  "SBD":"San Bernardino Intl","VEL":"Vernal Regional Airport",
+  "PIE":"St. Pete-Clearwater Intl","SAF":"Santa Fe Municipal Airport",
+  "MSN":"Dane County Regional Airport","COE":"Coeur d Alene Airport",
+  "CLD":"Palomar Airport","CDE":"Coudersport Airport"
 };
+
+// ── COUNTRY CODE → FULL NAME ─────────────────────────────────────────────────
+const COUNTRIES = {
+  "US":"United States","CA":"Canada","MX":"Mexico","GB":"United Kingdom",
+  "DE":"Germany","FR":"France","NL":"Netherlands","ES":"Spain","IT":"Italy",
+  "PT":"Portugal","IE":"Ireland","BE":"Belgium","CH":"Switzerland","AT":"Austria",
+  "DK":"Denmark","SE":"Sweden","NO":"Norway","FI":"Finland","PL":"Poland",
+  "CZ":"Czech Republic","HU":"Hungary","GR":"Greece","TR":"Turkey",
+  "AE":"United Arab Emirates","SA":"Saudi Arabia","QA":"Qatar","KW":"Kuwait",
+  "IL":"Israel","EG":"Egypt","ZA":"South Africa","NG":"Nigeria","KE":"Kenya",
+  "ET":"Ethiopia","SG":"Singapore","MY":"Malaysia","TH":"Thailand","ID":"Indonesia",
+  "PH":"Philippines","HK":"Hong Kong","CN":"China","JP":"Japan","KR":"South Korea",
+  "TW":"Taiwan","IN":"India","AU":"Australia","NZ":"New Zealand","BR":"Brazil",
+  "AR":"Argentina","CL":"Chile","CO":"Colombia","PE":"Peru","RU":"Russia",
+  "UA":"Ukraine","BY":"Belarus","RO":"Romania","BG":"Bulgaria","HR":"Croatia",
+  "SK":"Slovakia","SI":"Slovenia","RS":"Serbia","BA":"Bosnia and Herzegovina",
+  "AL":"Albania","MK":"North Macedonia","LU":"Luxembourg","MT":"Malta",
+  "CY":"Cyprus","IS":"Iceland","EE":"Estonia","LV":"Latvia","LT":"Lithuania",
+  "MD":"Moldova","GE":"Georgia","AM":"Armenia","AZ":"Azerbaijan","KZ":"Kazakhstan",
+  "UZ":"Uzbekistan","TM":"Turkmenistan","KG":"Kyrgyzstan","TJ":"Tajikistan",
+  "AF":"Afghanistan","PK":"Pakistan","BD":"Bangladesh","LK":"Sri Lanka",
+  "NP":"Nepal","MM":"Myanmar","VN":"Vietnam","KH":"Cambodia","LA":"Laos",
+  "MN":"Mongolia","IR":"Iran","IQ":"Iraq","JO":"Jordan","LB":"Lebanon",
+  "SY":"Syria","YE":"Yemen","OM":"Oman","BH":"Bahrain","PG":"Papua New Guinea",
+  "NZ":"New Zealand","FJ":"Fiji","CU":"Cuba","DO":"Dominican Republic",
+  "JM":"Jamaica","TT":"Trinidad and Tobago","GT":"Guatemala","HN":"Honduras",
+  "SV":"El Salvador","NI":"Nicaragua","CR":"Costa Rica","PA":"Panama",
+  "EC":"Ecuador","VE":"Venezuela","UY":"Uruguay","PY":"Paraguay","BO":"Bolivia",
+  "GH":"Ghana","CI":"Ivory Coast","SN":"Senegal","CM":"Cameroon","TZ":"Tanzania",
+  "UG":"Uganda","MZ":"Mozambique","ZW":"Zimbabwe","ZM":"Zambia","AO":"Angola",
+  "MA":"Morocco","DZ":"Algeria","TN":"Tunisia","LY":"Libya","SD":"Sudan",
+};
+
+function countryName(code) {
+  if (!code) return '—';
+  return COUNTRIES[code.toUpperCase()] || code;
+}
 
 const AIRLINE_DOMAINS={
   'UAL':'united.com','DAL':'delta.com','AAL':'aa.com','SWA':'southwest.com',
@@ -562,6 +628,12 @@ const AIRLINE_COLORS={
   'JSX':{bg:'#0a1628',text:'#00b4d8',name:'JSX Air'},
   'ROU':{bg:'#c0141e',text:'#ffffff',name:'Air Canada Rouge'},
   'FDY':{bg:'#003366',text:'#f59e0b',name:'Southern Airways Express'},
+  'JZA':{bg:'#cc0000',text:'#ffffff',name:'Jazz Aviation'},
+  'VTE':{bg:'#00366b',text:'#ffffff',name:'Contour Airlines'},
+  'JTL':{bg:'#1a1a2e',text:'#d4af37',name:'Jet Linx Aviation'},
+  'SCX':{bg:'#d4001a',text:'#f0c040',name:'Sun Country Airlines'},
+  'AAY':{bg:'#ff6600',text:'#000080',name:'Allegiant Air'},
+  'CTF':{bg:'#003087',text:'#ffffff',name:'Cutter Aviation'},
 };
 
 // Known cargo ICAO codes
@@ -676,6 +748,26 @@ const AIRLINE_SVGS = {
   'SKW': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#002080"/><text x="32" y="24" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="9" font-weight="900" fill="#ffffff" textLength="52" lengthAdjust="spacingAndGlyphs">SKYWEST</text><line x1="8" y1="29" x2="56" y2="29" stroke="#4a90d9" stroke-width="1.5"/><text x="32" y="42" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#4a90d9" textLength="44" lengthAdjust="spacingAndGlyphs">AIRLINES</text><text x="32" y="56" text-anchor="middle" font-family="Arial,sans-serif" font-size="7" fill="#ffffff" opacity="0.5">OO</text></svg>`,
 
   'FDY': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#003366"/><text x="32" y="20" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="8" font-weight="900" fill="#ffffff" textLength="54" lengthAdjust="spacingAndGlyphs">SOUTHERN</text><text x="32" y="32" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="8" font-weight="900" fill="#f59e0b" textLength="44" lengthAdjust="spacingAndGlyphs">AIRWAYS</text><line x1="8" y1="36" x2="56" y2="36" stroke="#f59e0b" stroke-width="1.5"/><text x="32" y="47" text-anchor="middle" font-family="Arial,sans-serif" font-size="7" fill="#ffffff" textLength="48" lengthAdjust="spacingAndGlyphs">EXPRESS</text><text x="32" y="58" text-anchor="middle" font-family="Arial,sans-serif" font-size="6" fill="#f59e0b" opacity="0.7">9X</text></svg>`,
+
+  'WJA': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#00457c"/><text x="32" y="26" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="13" font-weight="900" fill="#ffffff" textLength="54" lengthAdjust="spacingAndGlyphs">WestJet</text><line x1="8" y1="32" x2="56" y2="32" stroke="#00b0e8" stroke-width="1.5"/><text x="32" y="45" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#00b0e8" textLength="40" lengthAdjust="spacingAndGlyphs">AIRLINES</text><circle cx="52" cy="54" r="5" fill="#00b0e8" opacity="0.4"/></svg>`,
+
+  'ENY': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#001f70"/><text x="32" y="24" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="11" font-weight="900" fill="#ffffff" textLength="52" lengthAdjust="spacingAndGlyphs">ENVOY</text><line x1="8" y1="29" x2="56" y2="29" stroke="#4a90d9" stroke-width="1.5"/><text x="32" y="42" text-anchor="middle" font-family="Arial,sans-serif" font-size="9" fill="#4a90d9" textLength="36" lengthAdjust="spacingAndGlyphs">AIR</text><text x="32" y="56" text-anchor="middle" font-family="Arial,sans-serif" font-size="7" fill="#ffffff" opacity="0.5">MQ</text></svg>`,
+
+  'JZA': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#cc0000"/><text x="32" y="26" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="16" font-weight="900" fill="#ffffff">JAZZ</text><line x1="8" y1="31" x2="56" y2="31" stroke="#ffffff" stroke-width="1" opacity="0.5"/><text x="32" y="44" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#ffffff" opacity="0.9" textLength="50" lengthAdjust="spacingAndGlyphs">AIR CANADA</text><text x="32" y="56" text-anchor="middle" font-family="Arial,sans-serif" font-size="7" fill="#ffcccc" textLength="38" lengthAdjust="spacingAndGlyphs">EXPRESS</text></svg>`,
+
+  'VTE': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#00366b"/><text x="32" y="24" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="11" font-weight="900" fill="#ffffff" textLength="52" lengthAdjust="spacingAndGlyphs">CONTOUR</text><line x1="8" y1="29" x2="56" y2="29" stroke="#00aaff" stroke-width="1.5"/><text x="32" y="43" text-anchor="middle" font-family="Arial,sans-serif" font-size="9" fill="#00aaff" textLength="44" lengthAdjust="spacingAndGlyphs">AIRLINES</text><text x="32" y="56" text-anchor="middle" font-family="Arial,sans-serif" font-size="6" fill="#ffffff" opacity="0.5">LF</text></svg>`,
+
+  'JTL': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#1a1a2e"/><text x="32" y="22" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="9" font-weight="900" fill="#d4af37" textLength="52" lengthAdjust="spacingAndGlyphs">JET LINX</text><line x1="8" y1="27" x2="56" y2="27" stroke="#d4af37" stroke-width="1.5"/><text x="32" y="40" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="9" font-weight="900" fill="#d4af37" textLength="48" lengthAdjust="spacingAndGlyphs">AVIATION</text><text x="32" y="56" text-anchor="middle" font-family="Arial,sans-serif" font-size="7" fill="#d4af37" opacity="0.6">PRIVATE JET</text></svg>`,
+
+  'SCX': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#d4001a"/><text x="32" y="22" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="9" font-weight="900" fill="#f0c040" textLength="52" lengthAdjust="spacingAndGlyphs">SUN COUNTRY</text><line x1="8" y1="27" x2="56" y2="27" stroke="#f0c040" stroke-width="1.5"/><text x="32" y="41" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="9" font-weight="900" fill="#ffffff" textLength="44" lengthAdjust="spacingAndGlyphs">AIRLINES</text><circle cx="32" cy="54" r="5" fill="#f0c040" opacity="0.6"/></svg>`,
+
+  'AAY': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#000080"/><rect x="4" y="30" width="56" height="20" rx="3" fill="#ff6600"/><text x="32" y="22" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="9" font-weight="900" fill="#ff6600" textLength="52" lengthAdjust="spacingAndGlyphs">ALLEGIANT</text><text x="32" y="45" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="10" font-weight="900" fill="#000080" textLength="40" lengthAdjust="spacingAndGlyphs">AIR</text></svg>`,
+
+  'UPS': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#301506"/><text x="32" y="26" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="18" font-weight="900" fill="#ff9900">UPS</text><line x1="8" y1="32" x2="56" y2="32" stroke="#ff9900" stroke-width="1.5"/><text x="32" y="46" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#ff9900" textLength="50" lengthAdjust="spacingAndGlyphs">AIRLINES</text><rect x="26" y="50" width="12" height="3" rx="1" fill="#ff9900" opacity="0.5"/></svg>`,
+
+  'FDX': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#4d148c"/><text x="32" y="28" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="16" font-weight="900" fill="#ffffff">Fed</text><text x="32" y="46" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="16" font-weight="900" fill="#ff6200">Ex</text></svg>`,
+
+  'CTF': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#003087"/><text x="32" y="22" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="9" font-weight="900" fill="#ffffff" textLength="52" lengthAdjust="spacingAndGlyphs">CUTTER</text><line x1="8" y1="27" x2="56" y2="27" stroke="#7eb8e8" stroke-width="1.5"/><text x="32" y="41" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="9" font-weight="900" fill="#7eb8e8" textLength="48" lengthAdjust="spacingAndGlyphs">AVIATION</text><text x="32" y="56" text-anchor="middle" font-family="Arial,sans-serif" font-size="7" fill="#ffffff" opacity="0.5">FBO · CHARTER</text></svg>`,
 };
 
 function getAirlineSvg(icao) {
@@ -753,7 +845,7 @@ let radarDotHits=[],popupTimeout=null;
 function updateClock(){
   const now=new Date();
   const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  const months=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const months=['January','February','March','April','May','June','July','August','September','October','November','December'];
   let h=now.getHours(),m=String(now.getMinutes()).padStart(2,'0'),s=String(now.getSeconds()).padStart(2,'0');
   const ampm=h>=12?'PM':'AM';h=h%12||12;
   document.getElementById('datetimeDisplay').textContent=`${days[now.getDay()]}, ${months[now.getMonth()]} ${now.getDate()}  ·  ${h}:${m}:${s} ${ampm}`;
@@ -851,6 +943,48 @@ function loadFlights(){
     });
 }
 
+// ── CLEAR STATE (zero results) ─────────────────────────────────────────────
+function clearNearestPanel() {
+  document.getElementById('nCallsign').innerHTML = '------<span class="led-blink">_</span>';
+  document.getElementById('nAirline').textContent = 'No aircraft found in this area.';
+  document.getElementById('nAirline').style.color = 'var(--text-dim)';
+  document.getElementById('nAcTypeBadgeWrap').innerHTML = '';
+  document.getElementById('nDep').textContent = '---';
+  document.getElementById('nDepName').textContent = '—';
+  document.getElementById('nArr').textContent = '---';
+  document.getElementById('nArrName').textContent = '—';
+  document.getElementById('nAlt').textContent = '—';
+  document.getElementById('nSpeed').textContent = '—';
+  document.getElementById('nHdg').textContent = '—';
+  document.getElementById('nDist').textContent = '—';
+  document.getElementById('nStatus').textContent = '—';
+  document.getElementById('nStatus').style.color = 'var(--text-dim)';
+  document.getElementById('nCountry').textContent = '—';
+  document.getElementById('nNarrative').textContent = 'No aircraft detected in range. Try a larger radius or check back later.';
+  document.getElementById('airlineLogoWrap').innerHTML = '';
+  updateApiStatus('clearbit', 'idle', 'No aircraft');
+}
+
+function clearRadar() {
+  const g = document.getElementById('radarPlanes');
+  if (g) g.innerHTML = '';
+  radarDotHits = [];
+  document.getElementById('statTotal').textContent = '0';
+  document.getElementById('statAirborne').textContent = '0';
+  document.getElementById('statGround').textContent = '0';
+}
+
+function resetTicker() {
+  document.getElementById('tickerInner').innerHTML = `
+    <span class="ticker-item">FLYING OVERHEAD — LIVE ADS-B TRACKER</span>
+    <span class="ticker-item">NO AIRCRAFT IN RANGE — TRY A LARGER RADIUS</span>
+    <span class="ticker-item">DATA: AIRLABS.CO</span>
+    <span class="ticker-item">FLYING OVERHEAD — LIVE ADS-B TRACKER</span>
+    <span class="ticker-item">NO AIRCRAFT IN RANGE — TRY A LARGER RADIUS</span>
+    <span class="ticker-item">DATA: AIRLABS.CO</span>
+  `;
+}
+
 // ── PROCESS ────────────────────────────────────────────────────────────────
 function processFlights(states){
   const sortBy=document.getElementById('sortBy').value;
@@ -862,7 +996,13 @@ function processFlights(states){
   else if(sortBy==='speed')flights.sort((a,b)=>b.speed-a.speed);
   document.getElementById('countBadge').textContent=flights.length+' tracked';
   renderTable();renderStats();
-  if(flights.length>0){selectFlight(0);renderRadar();}
+  if(flights.length>0){
+    selectFlight(0);renderRadar();
+  } else {
+    clearNearestPanel();
+    clearRadar();
+    resetTicker();
+  }
   updateTicker();
 }
 
@@ -884,7 +1024,7 @@ function renderTable(){
     const dest=f.arrIata?`<span class="iata-val has-tip" data-tip="${airportName(f.arrIata)}">${f.arrIata}</span>`:`<span style="color:#475569">—</span>`;
     const cat=getAircraftCategory(f);
     return`<tr onclick="selectFlight(${i})" class="${i===selectedIdx?'selected':''}">
-      <td><span class="callsign">${f.callsign||f.icao||'—'}</span></td>
+      <td><span class="callsign" style="cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px;" onclick="showCallsignPopup(event,${i})" title="Click to view aircraft photo">${f.callsign||f.icao||'—'}</span></td>
       <td>${airlineBadge}</td>
       <td>${typeBadge(f)}</td>
       <td><span class="actype-val">${cat}</span></td>
@@ -923,7 +1063,7 @@ function selectFlight(idx){
   document.getElementById('nDist').textContent=kmToMiles(f.dist)+' mi';
   document.getElementById('nStatus').textContent=f.onGround?'ON GROUND':'EN-ROUTE';
   document.getElementById('nStatus').style.color=f.onGround?'var(--amber)':'var(--green)';
-  document.getElementById('nCountry').textContent=f.country||'—';
+  document.getElementById('nCountry').textContent=countryName(f.country);
   renderAirlineLogo(f.airlineIcao,ai);
   renderNarrative(f,ai,cat,kts);
 
@@ -1073,6 +1213,76 @@ function showRadarPopup(idx,dotEl){
 
 document.getElementById('radarSvg').addEventListener('click',e=>{
   if(!e.target.classList.contains('radar-hit'))document.getElementById('radarPopup').classList.add('hidden');
+});
+
+// ── CALLSIGN POPUP ─────────────────────────────────────────────────────────
+let callsignPopupTimeout = null;
+
+function showCallsignPopup(evt, idx) {
+  evt.stopPropagation();
+  const f = flights[idx]; if (!f) return;
+  const popup = document.getElementById('callsignPopup');
+  const ai = f.airlineIcao ? getAirlineInfo(f.airlineIcao) : null;
+  const kts = kmhToKnots(f.speed * 3.6), mph = knotsToMph(kts);
+  const cat = getAircraftCategory(f);
+  const reg = f.icao || '';
+
+  popup.innerHTML = `
+    <button class="rp-close" onclick="document.getElementById('callsignPopup').classList.add('hidden')">✕</button>
+    <div class="rp-callsign">${f.callsign || f.icao || '—'}</div>
+    <div class="rp-airline">${ai ? ai.name : (f.airlineIata || 'Unknown')}</div>
+    <div class="rp-actype">${cat}</div>
+    <div class="rp-stats">
+      <span>Alt: ${f.onGround ? 'On Ground' : metersToFeet(f.altM).toLocaleString() + ' ft'}</span>
+      <span>Spd: ${kts} kts (${mph} mph)</span>
+      <span>Hdg: ${Math.round(f.heading)}° ${headingDir(f.heading)}</span>
+      <span>Dist: ${kmToMiles(f.dist)} mi</span>
+      ${f.depIata && f.arrIata ? `<span>${f.depIata} ──► ${f.arrIata}</span>` : ''}
+    </div>
+    <div class="rp-photo-area" id="csPhotoArea">LOADING PHOTO…</div>
+  `;
+  popup.classList.remove('hidden');
+
+  // Position near the click
+  const x = Math.min(evt.clientX + 12, window.innerWidth - 260);
+  const y = Math.min(evt.clientY - 20, window.innerHeight - 320);
+  popup.style.left = x + 'px';
+  popup.style.top = y + 'px';
+
+  // Fetch photo
+  updateApiStatus('planes', 'pending', 'Fetching photo…');
+  if (reg) {
+    fetchWithTimeout(`https://api.planespotters.net/pub/photos/hex/${reg.toLowerCase()}`, {}, 8000)
+      .then(r => r.json())
+      .then(data => {
+        const photo = data.photos && data.photos[0];
+        const area = document.getElementById('csPhotoArea');
+        if (area && photo?.thumbnail_large?.src) {
+          updateApiStatus('planes', 'ok', 'Photo loaded');
+          area.outerHTML = `<img class="rp-photo" src="${photo.thumbnail_large.src}" alt="Aircraft photo" onerror="this.style.display='none'">`;
+        } else {
+          updateApiStatus('planes', 'ok', 'No photo available');
+          if (area) area.textContent = 'No photo available';
+        }
+      })
+      .catch(e => {
+        updateApiStatus('planes', 'err', e.message.includes('timeout') ? 'Timed out' : e.message);
+        const area = document.getElementById('csPhotoArea');
+        if (area) area.textContent = e.message.includes('timeout') ? 'Photo timed out' : 'Photo unavailable';
+      });
+  } else {
+    document.getElementById('csPhotoArea').textContent = 'No registration data';
+    updateApiStatus('planes', 'idle', 'No registration data');
+  }
+
+  clearTimeout(callsignPopupTimeout);
+  callsignPopupTimeout = setTimeout(() => popup.classList.add('hidden'), 8000);
+}
+
+// Close callsign popup on outside click
+document.addEventListener('click', e => {
+  const popup = document.getElementById('callsignPopup');
+  if (popup && !popup.contains(e.target)) popup.classList.add('hidden');
 });
 
 // ── TICKER ─────────────────────────────────────────────────────────────────
