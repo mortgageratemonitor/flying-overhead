@@ -13,11 +13,11 @@
     --green:#4ade80;--green-dim:#0f4a22;
     --cyan:#22d3ee;--cyan-dim:#084552;
     --red:#f87171;--muted:#4a5568;
-    --text:#f1f5f9;--text-dim:#94a3b8;
+    --text:#f1f5f9;--text-dim:#b8c8d8;
     --scan-line:rgba(255,255,255,0.015);
   }
   *{box-sizing:border-box;margin:0;padding:0;}
-  body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;font-size:16px;min-height:100vh;overflow-x:hidden;}
+  body{background:var(--bg);color:var(--text);font-family:'Rajdhani',sans-serif;font-size:18px;min-height:100vh;overflow-x:hidden;}
   body::before{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 2px,var(--scan-line) 2px,var(--scan-line) 4px);pointer-events:none;z-index:9999;}
 
   /* HEADER */
@@ -26,15 +26,15 @@
   .logo-text{font-family:'Share Tech Mono',monospace;font-size:1.2rem;color:var(--cyan);letter-spacing:0.1em;}
   .logo-sub{font-size:0.75rem;color:var(--text-dim);letter-spacing:0.2em;text-transform:uppercase;display:block;}
   .header-right{display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;}
-  .datetime{font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:var(--text-dim);}
-  .status-pill{display:flex;align-items:center;gap:0.4rem;font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:var(--text-dim);}
+  .datetime{font-family:'Share Tech Mono',monospace;font-size:0.88rem;color:var(--text-dim);}
+  .status-pill{display:flex;align-items:center;gap:0.4rem;font-family:'Share Tech Mono',monospace;font-size:0.88rem;color:var(--text-dim);}
   .status-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);transition:background 0.3s;}
   .status-dot.live{background:var(--green);box-shadow:0 0 6px var(--green);animation:pulse-dot 2s infinite;}
   .status-dot.loading{background:var(--amber);box-shadow:0 0 6px var(--amber);}
   .status-dot.error{background:var(--red);}
   @keyframes pulse-dot{0%,100%{opacity:1}50%{opacity:0.4}}
   .vr{width:1px;height:18px;background:var(--panel-border);}
-  .timer-display{font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:var(--text-dim);}
+  .timer-display{font-family:'Share Tech Mono',monospace;font-size:0.88rem;color:var(--text-dim);}
 
   /* API STATUS */
   .api-status-wrap{position:relative;}
@@ -45,13 +45,13 @@
   .api-status-title{font-family:'Share Tech Mono',monospace;font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-dim);margin-bottom:0.75rem;}
   .api-row{display:flex;align-items:center;justify-content:space-between;padding:0.4rem 0;border-bottom:1px solid #1a2535;gap:0.5rem;}
   .api-row:last-child{border-bottom:none;}
-  .api-name{font-family:'Share Tech Mono',monospace;font-size:0.75rem;color:var(--text);}
-  .api-state{font-family:'Share Tech Mono',monospace;font-size:0.7rem;}
+  .api-name{font-family:'Share Tech Mono',monospace;font-size:0.82rem;color:var(--text);}
+  .api-state{font-family:'Share Tech Mono',monospace;font-size:0.78rem;}
   .api-state.ok{color:var(--green);}
   .api-state.err{color:var(--red);}
   .api-state.pending{color:var(--amber);}
   .api-state.idle{color:var(--text-dim);}
-  .api-msg{font-size:0.7rem;color:var(--text-dim);max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .api-msg{font-size:0.78rem;color:var(--text-dim);max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .api-global-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
   .api-global-dot.ok{background:var(--green);}
   .api-global-dot.err{background:var(--red);}
@@ -67,7 +67,7 @@
   .legend-section-title{font-family:'Share Tech Mono',monospace;font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-dim);margin-bottom:0.6rem;}
   .legend-divider{border:none;border-top:1px solid var(--panel-border);margin:0.75rem 0;}
   .legend-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.4rem 1rem;margin-bottom:0.25rem;}
-  .legend-item{display:flex;align-items:center;gap:0.5rem;font-size:0.85rem;color:var(--text-dim);}
+  .legend-item{display:flex;align-items:center;gap:0.5rem;font-size:0.95rem;color:var(--text-dim);}
 
   /* CONTROLS */
   .controls{display:flex;gap:0.6rem;align-items:center;flex-wrap:wrap;padding:0.75rem 1.5rem;border-bottom:1px solid var(--panel-border);background:#0c0f14;}
@@ -95,38 +95,38 @@
   /* NEAREST PANEL */
   .nearest-panel{background:var(--panel);border:1px solid var(--cyan-dim);border-radius:8px;padding:1.25rem;display:grid;grid-template-columns:1fr 220px;gap:1.5rem;align-items:start;}
   .nearest-left{display:flex;flex-direction:column;gap:0.75rem;}
-  .section-label{font-family:'Share Tech Mono',monospace;font-size:0.68rem;letter-spacing:0.22em;text-transform:uppercase;color:var(--text-dim);}
+  .section-label{font-family:'Share Tech Mono',monospace;font-size:0.75rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-dim);}
   .nearest-top-row{display:flex;align-items:flex-start;gap:1rem;}
   .airline-logo-wrap{width:64px;height:64px;border-radius:6px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;border:1px solid var(--panel-border);}
   .airline-logo-wrap img{width:56px;height:56px;object-fit:contain;}
   .airline-logo-fallback{width:64px;height:64px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-family:'Share Tech Mono',monospace;font-size:0.85rem;font-weight:700;flex-shrink:0;letter-spacing:0.05em;}
   .nearest-callsign{font-family:'Share Tech Mono',monospace;font-size:2rem;color:#fff;text-shadow:0 0 16px rgba(34,211,238,0.4);letter-spacing:0.05em;line-height:1;}
-  .nearest-airline{font-size:1rem;color:var(--text-dim);margin-top:0.2rem;}
+  .nearest-airline{font-size:1.1rem;color:var(--text-dim);margin-top:0.2rem;}
   .route-row{display:flex;align-items:flex-start;gap:0.75rem;}
   .route-airport{text-align:center;}
   .route-code{font-family:'Share Tech Mono',monospace;font-size:1.3rem;color:#fff;display:block;}
-  .route-name{font-size:0.72rem;color:var(--text-dim);display:block;margin-top:2px;max-width:130px;line-height:1.3;}
+  .route-name{font-size:0.82rem;color:var(--text-dim);display:block;margin-top:2px;max-width:130px;line-height:1.3;}
   .route-arrow{font-family:'Share Tech Mono',monospace;color:var(--panel-border);font-size:1.1rem;padding-top:0.3rem;}
   .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0.5rem;}
   .stat-card{background:#080c10;border:1px solid var(--panel-border);border-radius:5px;padding:0.6rem 0.75rem;}
-  .stat-label{font-size:0.65rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-dim);font-family:'Share Tech Mono',monospace;display:block;margin-bottom:0.2rem;}
-  .stat-value{font-size:1.05rem;font-family:'Share Tech Mono',monospace;color:var(--cyan);display:block;}
+  .stat-label{font-size:0.72rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-dim);font-family:'Share Tech Mono',monospace;display:block;margin-bottom:0.2rem;}
+  .stat-value{font-size:1.15rem;font-family:'Share Tech Mono',monospace;color:var(--cyan);display:block;}
 
   /* NARRATIVE */
-  .narrative-box{background:#080c10;border:1px solid var(--panel-border);border-radius:5px;padding:0.75rem 1rem;font-size:0.9rem;color:var(--text-dim);line-height:1.6;}
+  .narrative-box{background:#080c10;border:1px solid var(--panel-border);border-radius:5px;padding:0.75rem 1rem;font-size:1rem;color:var(--text-dim);line-height:1.6;}
   .narrative-box strong{color:var(--text);}
 
   /* RADAR */
   .radar-corner{display:flex;flex-direction:column;align-items:center;gap:0.6rem;}
-  .radar-label{font-family:'Share Tech Mono',monospace;font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-dim);}
+  .radar-label{font-family:'Share Tech Mono',monospace;font-size:0.72rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-dim);}
   .mini-radar-wrap{position:relative;width:100%;max-width:200px;}
   .mini-radar{width:100%;aspect-ratio:1;display:block;cursor:pointer;}
   .radar-controls{display:flex;align-items:center;gap:0.6rem;}
   .radar-btn{background:transparent;border:1px solid var(--panel-border);color:var(--text-dim);width:28px;height:28px;border-radius:4px;cursor:pointer;font-size:0.9rem;display:flex;align-items:center;justify-content:center;transition:all 0.2s;}
   .radar-btn:hover{border-color:var(--cyan);color:var(--cyan);}
-  .radar-facing{font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:var(--text-dim);min-width:50px;text-align:center;}
+  .radar-facing{font-family:'Share Tech Mono',monospace;font-size:0.9rem;color:var(--text-dim);min-width:50px;text-align:center;}
   .radar-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:0.4rem;width:100%;}
-  .radar-stat{background:#080c10;border:1px solid var(--panel-border);border-radius:4px;padding:0.45rem 0.6rem;text-align:center;}
+  .radar-stat{background:#080c10;border:1px solid var(--panel-border);border-radius:4px;padding:0.5rem 0.6rem;text-align:center;}
 
   /* RADAR POPUP */
   .radar-popup{position:absolute;background:#0f1318;border:1px solid var(--cyan-dim);border-radius:6px;padding:0.75rem;z-index:200;min-width:210px;max-width:240px;pointer-events:none;box-shadow:0 4px 20px rgba(0,0,0,0.6);}
@@ -144,11 +144,11 @@
   .count-badge{font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:var(--cyan);background:var(--cyan-dim);border-radius:3px;padding:2px 10px;}
   .table-wrap{overflow-x:auto;}
   table{width:100%;border-collapse:collapse;font-size:0.95rem;}
-  thead th{font-family:'Share Tech Mono',monospace;font-size:0.68rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--text-dim);padding:0.5rem 0.75rem;text-align:left;border-bottom:1px solid var(--panel-border);white-space:nowrap;}
+  thead th{font-family:'Share Tech Mono',monospace;font-size:0.75rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--text-dim);padding:0.5rem 0.75rem;text-align:left;border-bottom:1px solid var(--panel-border);white-space:nowrap;}
   tbody tr{border-bottom:1px solid #151c24;cursor:pointer;transition:background 0.15s;}
   tbody tr:hover{background:#141a22;}
   tbody tr.selected{background:#0d1d2e;border-left:3px solid var(--cyan);}
-  tbody td{padding:0.65rem 0.75rem;white-space:nowrap;vertical-align:middle;color:var(--text);font-size:0.95rem;}
+  tbody td{padding:0.65rem 0.75rem;white-space:nowrap;vertical-align:middle;color:var(--text);font-size:1rem;}
   .callsign{font-family:'Share Tech Mono',monospace;font-size:1rem;color:#fff;letter-spacing:0.05em;}
 
   /* TOOLTIPS */
@@ -179,7 +179,7 @@
   .empty-sub{font-size:0.9rem;max-width:320px;line-height:1.6;}
 
   /* TICKER */
-  .ticker-wrap{overflow:hidden;border-top:1px solid var(--panel-border);padding:0.45rem 1.5rem;background:#070a0d;font-family:'Share Tech Mono',monospace;font-size:0.75rem;color:var(--text-dim);white-space:nowrap;}
+  .ticker-wrap{overflow:hidden;border-top:1px solid var(--panel-border);padding:0.45rem 1.5rem;background:#070a0d;font-family:'Share Tech Mono',monospace;font-size:0.85rem;color:var(--text-dim);white-space:nowrap;}
   .ticker-inner{display:inline-block;animation:ticker 40s linear infinite;}
   @keyframes ticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
   .ticker-item{margin-right:4rem;}
@@ -255,7 +255,7 @@
           <span class="api-msg" id="apiMsgPlanes">No requests yet</span>
         </div>
         <div class="api-row">
-          <span class="api-name">Clearbit Logos</span>
+          <span class="api-name">Airhex Logos</span>
           <span class="api-state idle" id="apiStateClearbit">IDLE</span>
           <span class="api-msg" id="apiMsgClearbit">No requests yet</span>
         </div>
@@ -504,7 +504,15 @@ const AIRPORTS={
   "AKL":"Auckland Airport","YYZ":"Toronto Pearson Intl","YVR":"Vancouver Intl",
   "YUL":"Montreal-Trudeau Intl","YYC":"Calgary Intl","GRU":"Sao Paulo Guarulhos Intl",
   "GIG":"Rio de Janeiro Galeao Intl","EZE":"Buenos Aires Ezeiza Intl","LIM":"Lima Jorge Chavez Intl",
-  "BOG":"El Dorado Intl","MEX":"Mexico City Intl","CUN":"Cancun Intl","YHZ":"Halifax Stanfield Intl"
+  "BOG":"El Dorado Intl","MEX":"Mexico City Intl","CUN":"Cancun Intl","YHZ":"Halifax Stanfield Intl",
+  "RNO":"Reno-Tahoe Intl","FLG":"Flagstaff Pulliam Airport","OGG":"Kahului Airport (Maui)",
+  "GEG":"Spokane Intl","YUM":"Yuma Intl","SCF":"Scottsdale Airport",
+  "SBP":"San Luis Obispo County Regional","CRQ":"McClellan-Palomar Airport",
+  "APA":"Centennial Airport","MRY":"Monterey Regional","RDM":"Redmond-Roberts Field",
+  "PSC":"Tri-Cities Airport","BFL":"Meadows Field Bakersfield","MFR":"Rogue Valley Intl-Medford",
+  "IWA":"Phoenix-Mesa Gateway","GUP":"Gallup Municipal","PVU":"Provo Municipal",
+  "AZA":"Phoenix-Mesa Gateway","CID":"The Eastern Iowa Airport",
+  "DVT":"Phoenix Deer Valley Airport","FAT":"Fresno Yosemite Intl"
 };
 
 const AIRLINE_DOMAINS={
@@ -622,8 +630,8 @@ function typeLabel(f){
 
 // ── AIRLINE LOGO ───────────────────────────────────────────────────────────
 function getLogoUrl(icao){
-  const domain=AIRLINE_DOMAINS[icao?.toUpperCase()];
-  return domain?`https://logo.clearbit.com/${domain}`:null;
+  if(!icao)return null;
+  return `https://content.airhex.com/content/logos/airlines_${icao.toUpperCase()}_64_64_s.png`;
 }
 function getFallbackBadgeHTML(code,bg,text){
   return`<div class="airline-logo-fallback" style="background:${bg};color:${text};border:1px solid #2a3545;">${code||'?'}</div>`;
@@ -631,20 +639,26 @@ function getFallbackBadgeHTML(code,bg,text){
 function renderAirlineLogo(icao,ai){
   const wrap=document.getElementById('airlineLogoWrap');
   if(!wrap)return;
-  const logoUrl=getLogoUrl(icao);
-  if(logoUrl){
-    updateApiStatus('clearbit','pending','Loading…');
-    const img=new Image();
-    img.onload=()=>updateApiStatus('clearbit','ok','Logo loaded');
-    img.onerror=()=>{updateApiStatus('clearbit','err','Logo not found');};
-    img.src=logoUrl;
-    wrap.innerHTML=`<div class="airline-logo-wrap"><img src="${logoUrl}" alt="${ai?ai.name:icao}" onerror="this.parentElement.outerHTML='${getFallbackBadgeHTML(icao,ai?ai.bg:'#1a2535',ai?ai.text:'#94a3b8').replace(/'/g,"\\'")}';updateApiStatus('clearbit','err','Logo unavailable')"></div>`;
-  } else if(ai){
-    wrap.innerHTML=getFallbackBadgeHTML(icao,ai.bg,ai.text);
-    updateApiStatus('clearbit','ok','Using badge fallback');
-  } else {
-    wrap.innerHTML='';
+  if(!icao){
+    wrap.innerHTML=ai?getFallbackBadgeHTML(icao,ai.bg,ai.text):'';
+    return;
   }
+  const logoUrl=getLogoUrl(icao);
+  const bg=ai?ai.bg:'#1a2535';
+  const tc=ai?ai.text:'#b8c8d8';
+  const label=icao||'?';
+  updateApiStatus('clearbit','pending','Loading logo…');
+  wrap.innerHTML=`<div class="airline-logo-fallback" style="background:#0a0c0f;color:#2a3545;border:1px solid #2a3545;">✈</div>`;
+  const probe=new Image();
+  probe.onload=()=>{
+    updateApiStatus('clearbit','ok','Logo loaded');
+    wrap.innerHTML=`<div class="airline-logo-wrap"><img src="${logoUrl}" alt="${ai?ai.name:icao}"></div>`;
+  };
+  probe.onerror=()=>{
+    updateApiStatus('clearbit','err','No logo — using badge');
+    wrap.innerHTML=getFallbackBadgeHTML(label,bg,tc);
+  };
+  probe.src=logoUrl;
 }
 
 // ── API STATUS ─────────────────────────────────────────────────────────────
