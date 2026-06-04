@@ -3,47 +3,7 @@ const fetch = require('node-fetch');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-
-const CLIENT_ID = process.env.OPENSKY_CLIENT_ID;
-const CLIENT_SECRET = process.env.OPENSKY_CLIENT_SECRET;
-
-const TOKEN_URL = 'https://auth.opensky-network.org/auth/realms/opensky-network/protocol/openid-connect/token';
-const OPENSKY_BASE = 'https://opensky-network.org/api';
-
-// --- Token cache ---
-let cachedToken = null;
-let tokenExpiresAt = 0;
-
-async function getBearerToken() {
-  const now = Date.now();
-  if (cachedToken && now < tokenExpiresAt - 30000) {
-    return cachedToken;
-  }
-
-  if (!CLIENT_ID || !CLIENT_SECRET) {
-    throw new Error('OPENSKY_CLIENT_ID and OPENSKY_CLIENT_SECRET env vars are required');
-  }
-
-  const res = await fetch(TOKEN_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: new URLSearchParams({
-      grant_type: 'client_credentials',
-      client_id: CLIENT_ID,
-      client_secret: CLIENT_SECRET,
-    }),
-  });
-
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Token fetch failed (${res.status}): ${text}`);
-  }
-
-  const data = await res.json();
-  cachedToken = data.access_token;
-  tokenExpiresAt = now + (data.expires_in || 1800) * 1000;
-  return cachedToken;
-}
+const AIRLABS_API_KEY = process.env.AIRLABS_API_KEY;
 
 // --- CORS middleware ---
 app.use((req, res, next) => {
@@ -56,34 +16,61 @@ app.use((req, res, next) => {
 
 // --- Health check ---
 app.get('/', (req, res) => {
-  res.json({ status: 'NearbyAir proxy running', authenticated: !!(CLIENT_ID && CLIENT_SECRET) });
+  res.json({ status: 'NearbyAir proxy running', authenticated: !!AIRLABS_API_KEY });
 });
 
-// --- States proxy: /flights?lamin=&lamax=&lomin=&lomax= ---
+// --- Flights proxy: /flights?lamin=&lamax=&lomin=&lomax= ---
 app.get('/flights', async (req, res) => {
   const { lamin, lamax, lomin, lomax } = req.query;
   if (!lamin || !lamax || !lomin || !lomax) {
     return res.status(400).json({ error: 'Missing bounding box params: lamin, lamax, lomin, lomax' });
   }
 
-  try {
-    const token = await getBearerToken();
-    const url = `${OPENSKY_BASE}/states/all?lamin=${lamin}&lamax=${lamax}&lomin=${lomin}&lomax=${lomax}`;
+  if (!AIRLABS_API_KEY) {
+    return res.status(500).json({ error: 'AIRLABS_API_KEY environment variable is not set' });
+  }
 
-    const apiRes = await fetch(url, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+  try {
+    // AirLabs bbox format: SW lat, SW lng, NE lat, NE lng
+    const bbox = `${lamin},${lomin},${lamax},${lomax}`;
+    const url = `https://airlabs.co/api/v9/flights?bbox=${bbox}&api_key=${AIRLABS_API_KEY}`;
+
+    const apiRes = await fetch(url);
 
     if (apiRes.status === 429) {
-      return res.status(429).json({ error: 'OpenSky rate limit hit. Try again in a few seconds.' });
+      return res.status(429).json({ error: 'AirLabs rate limit hit. Try again shortly.' });
     }
     if (!apiRes.ok) {
       const text = await apiRes.text();
-      return res.status(apiRes.status).json({ error: `OpenSky API error: ${text}` });
+      return res.status(apiRes.status).json({ error: `AirLabs API error: ${text}` });
     }
 
     const data = await apiRes.json();
-    res.json(data);
+
+    if (data.error) {
+      return res.status(400).json({ error: data.error.message || 'AirLabs API error' });
+    }
+
+    // Normalize AirLabs response to match what the frontend expects
+    const flights = (data.response || []).map(f => ({
+      icao: f.hex || '',
+      callsign: f.flight_iata || f.flight_icao || f.hex || '',
+      country: f.flag || '—',
+      lat: f.lat,
+      lon: f.lng,
+      altM: f.alt || 0,
+      onGround: f.status === 'landed' || f.alt === 0,
+      speed: f.speed ? f.speed / 3.6 : 0, // km/h to m/s to match previous unit
+      heading: f.dir || 0,
+      vertRate: f.v_speed || 0,
+      depIata: f.dep_iata || '',
+      arrIata: f.arr_iata || '',
+      airlineIata: f.airline_iata || '',
+      airlineIcao: f.airline_icao || '',
+      status: f.status || '',
+    }));
+
+    res.json({ flights });
   } catch (err) {
     console.error('Proxy error:', err.message);
     res.status(500).json({ error: err.message });
