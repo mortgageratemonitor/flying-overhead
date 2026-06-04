@@ -255,7 +255,7 @@
           <span class="api-msg" id="apiMsgPlanes">No requests yet</span>
         </div>
         <div class="api-row">
-          <span class="api-name">Airhex Logos</span>
+          <span class="api-name">Airline Logos</span>
           <span class="api-state idle" id="apiStateClearbit">IDLE</span>
           <span class="api-msg" id="apiMsgClearbit">No requests yet</span>
         </div>
@@ -514,7 +514,7 @@ const AIRPORTS={
   "AZA":"Phoenix-Mesa Gateway","CID":"The Eastern Iowa Airport",
   "DVT":"Phoenix Deer Valley Airport","FAT":"Fresno Yosemite Intl",
   "CUL":"Bachigualato Federal Intl","CNY":"Canyonlands Field","PVR":"Licenciado Gustavo Diaz Ordaz Intl",
-  "SGU":"St. George Regional Airport","STP":"St. Paul Downtown Holman Field","DRO":"Durango-La Plata County Airport"
+  "SGU":"St. George Regional Airport","STP":"St. Paul Downtown Holman Field","DRO":"Durango-La Plata County Airport","RIL":"Garfield County Regional Airport","SJD":"Los Cabos Intl"
 };
 
 const AIRLINE_DOMAINS={
@@ -558,6 +558,9 @@ const AIRLINE_COLORS={
   'VLG':{bg:'#8b7300',text:'#e00025',name:'Vueling'},
   'SKW':{bg:'#002080',text:'#ffffff',name:'SkyWest'},
   'ENY':{bg:'#001f70',text:'#ffffff',name:'Envoy Air'},
+  'EJA':{bg:'#1a1a2e',text:'#c9a84c',name:'NetJets'},
+  'JSX':{bg:'#0a1628',text:'#00b4d8',name:'JSX Air'},
+  'ROU':{bg:'#c0141e',text:'#ffffff',name:'Air Canada Rouge'},
 };
 
 // Known cargo ICAO codes
@@ -631,37 +634,79 @@ function typeLabel(f){
 }
 
 // ── AIRLINE LOGO ───────────────────────────────────────────────────────────
-function getLogoUrl(icao){
-  if(!icao)return null;
-  return `https://content.airhex.com/content/logos/airlines_${icao.toUpperCase()}_64_64_s.png`;
+// ── EMBEDDED AIRLINE WORDMARK SVGs ─────────────────────────────────────────
+const AIRLINE_SVGS = {
+  'AAL': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#0078d4"/><text x="32" y="24" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="11" font-weight="900" fill="#ffffff">AMERICAN</text><text x="32" y="40" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="11" font-weight="900" fill="#ffffff">AIRLINES</text><line x1="10" y1="45" x2="54" y2="45" stroke="#ffffff" stroke-width="1" opacity="0.4"/><text x="32" y="55" text-anchor="middle" font-family="Arial,sans-serif" font-size="7" fill="#c8e6ff">AA</text></svg>`,
+
+  'DAL': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#003a70"/><text x="32" y="26" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="13" font-weight="900" fill="#e31837">DELTA</text><line x1="10" y1="32" x2="54" y2="32" stroke="#e31837" stroke-width="1.5"/><text x="32" y="46" text-anchor="middle" font-family="Arial,sans-serif" font-size="9" fill="#ffffff">AIR LINES</text><polygon points="32,50 38,58 26,58" fill="#e31837" opacity="0.7"/></svg>`,
+
+  'UAL': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#001f5b"/><text x="32" y="26" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="13" font-weight="900" fill="#ffffff">UNITED</text><line x1="10" y1="31" x2="54" y2="31" stroke="#4a90d9" stroke-width="1.5"/><text x="32" y="44" text-anchor="middle" font-family="Arial,sans-serif" font-size="9" fill="#4a90d9">AIRLINES</text><circle cx="32" cy="54" r="4" fill="none" stroke="#4a90d9" stroke-width="1"/></svg>`,
+
+  'SWA': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#304cb2"/><text x="32" y="24" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="10" font-weight="900" fill="#ffbf27">SOUTHWEST</text><line x1="8" y1="29" x2="56" y2="29" stroke="#ffbf27" stroke-width="2"/><text x="32" y="43" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="10" font-weight="900" fill="#ffffff">AIRLINES</text><rect x="26" y="47" width="12" height="3" rx="1" fill="#ffbf27"/></svg>`,
+
+  'ASA': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#01426a"/><text x="32" y="24" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="12" font-weight="900" fill="#ffffff">ALASKA</text><line x1="10" y1="29" x2="54" y2="29" stroke="#00a3e0" stroke-width="1.5"/><text x="32" y="43" text-anchor="middle" font-family="Arial,sans-serif" font-size="9" fill="#00a3e0">AIRLINES</text><text x="32" y="56" text-anchor="middle" font-family="Arial,sans-serif" font-size="7" fill="#ffffff" opacity="0.6">AS</text></svg>`,
+
+  'JBU': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#003876"/><text x="32" y="26" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="14" font-weight="900" fill="#00b2ff">jet</text><text x="32" y="44" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="14" font-weight="900" fill="#ffffff">Blue</text><circle cx="52" cy="12" r="5" fill="#00b2ff" opacity="0.5"/></svg>`,
+
+  'FFT': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#3d2070"/><text x="32" y="24" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="10" font-weight="900" fill="#ffffff">FRONTIER</text><line x1="8" y1="29" x2="56" y2="29" stroke="#7b2d8b" stroke-width="2"/><text x="32" y="43" text-anchor="middle" font-family="Arial,sans-serif" font-size="9" fill="#a855f7">AIRLINES</text><circle cx="32" cy="54" r="4" fill="#7b2d8b"/></svg>`,
+
+  'NKS': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#1a1600"/><rect x="4" y="28" width="56" height="18" rx="3" fill="#f9c80e"/><text x="32" y="41" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="12" font-weight="900" fill="#000000">SPIRIT</text><text x="32" y="22" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#f9c80e">NK</text></svg>`,
+
+  'ACA': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#cc0000"/><text x="32" y="22" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="9" font-weight="900" fill="#ffffff">AIR</text><text x="32" y="36" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="11" font-weight="900" fill="#ffffff">CANADA</text><line x1="10" y1="41" x2="54" y2="41" stroke="#ffffff" stroke-width="1" opacity="0.5"/><text x="32" y="54" text-anchor="middle" font-family="Arial,sans-serif" font-size="7" fill="#ffcccc">AC</text></svg>`,
+
+  'ROU': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#c0141e"/><text x="32" y="22" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="9" font-weight="900" fill="#ffffff">AIR CANADA</text><text x="32" y="38" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="13" font-weight="900" fill="#ffffff">rouge</text><line x1="10" y1="43" x2="54" y2="43" stroke="#ffffff" stroke-width="1" opacity="0.4"/><text x="32" y="55" text-anchor="middle" font-family="Arial,sans-serif" font-size="7" fill="#ffaaaa">RV</text></svg>`,
+
+  'BAW': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#002f6c"/><text x="32" y="22" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="9" font-weight="900" fill="#ffffff">BRITISH</text><text x="32" y="36" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="9" font-weight="900" fill="#eb2226">AIRWAYS</text><line x1="10" y1="41" x2="54" y2="41" stroke="#eb2226" stroke-width="1.5"/><text x="32" y="54" text-anchor="middle" font-family="Arial,sans-serif" font-size="7" fill="#aac4ff">BA</text></svg>`,
+
+  'DLH': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#003366"/><rect x="4" y="38" width="56" height="14" rx="3" fill="#ffd700"/><text x="32" y="30" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="11" font-weight="900" fill="#ffd700">LUFTHANSA</text><text x="32" y="49" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="9" font-weight="900" fill="#003366">LH</text></svg>`,
+
+  'AFR': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#002395"/><text x="32" y="24" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="11" font-weight="900" fill="#ffffff">AIR</text><text x="32" y="40" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="11" font-weight="900" fill="#ef2b2d">FRANCE</text><line x1="10" y1="44" x2="54" y2="44" stroke="#ffffff" stroke-width="1" opacity="0.4"/><text x="32" y="56" text-anchor="middle" font-family="Arial,sans-serif" font-size="7" fill="#aac4ff">AF</text></svg>`,
+
+  'KLM': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#009bde"/><text x="32" y="28" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="16" font-weight="900" fill="#ffffff">KLM</text><line x1="10" y1="34" x2="54" y2="34" stroke="#ffffff" stroke-width="1.5" opacity="0.6"/><text x="32" y="46" text-anchor="middle" font-family="Arial,sans-serif" font-size="7" fill="#ffffff" opacity="0.9">ROYAL DUTCH AIRLINES</text></svg>`,
+
+  'UAE': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#c8102e"/><text x="32" y="26" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="12" font-weight="900" fill="#d4af37">EMIRATES</text><line x1="10" y1="32" x2="54" y2="32" stroke="#d4af37" stroke-width="1.5"/><text x="32" y="46" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#d4af37" opacity="0.8" letter-spacing="2">EK</text><rect x="10" y="50" width="44" height="2" rx="1" fill="#d4af37" opacity="0.3"/></svg>`,
+
+  'QFA': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#c8102e"/><text x="32" y="26" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="13" font-weight="900" fill="#ffffff">QANTAS</text><line x1="10" y1="32" x2="54" y2="32" stroke="#ffffff" stroke-width="1" opacity="0.5"/><text x="32" y="46" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#ffffff" opacity="0.8">THE SPIRIT OF AUSTRALIA</text></svg>`,
+
+  'EJA': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#1a1a2e"/><text x="32" y="24" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="11" font-weight="900" fill="#c9a84c">NET</text><text x="32" y="40" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="11" font-weight="900" fill="#c9a84c">JETS</text><line x1="10" y1="44" x2="54" y2="44" stroke="#c9a84c" stroke-width="1.5"/><text x="32" y="56" text-anchor="middle" font-family="Arial,sans-serif" font-size="7" fill="#c9a84c" opacity="0.7">PRIVATE AVIATION</text></svg>`,
+
+  'JSX': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#0a1628"/><text x="32" y="30" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="22" font-weight="900" fill="#00b4d8">JSX</text><line x1="10" y1="36" x2="54" y2="36" stroke="#00b4d8" stroke-width="1.5"/><text x="32" y="50" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#00b4d8" opacity="0.8">HOP-ON JET</text></svg>`,
+};
+
+function getAirlineSvg(icao) {
+  if (!icao) return null;
+  return AIRLINE_SVGS[icao.toUpperCase()] || null;
 }
-function getFallbackBadgeHTML(code,bg,text){
-  return`<div class="airline-logo-fallback" style="background:${bg};color:${text};border:1px solid #2a3545;">${code||'?'}</div>`;
+
+function getFallbackBadgeHTML(code, bg, text) {
+  // Improved styled badge — larger, more polished
+  return `<div class="airline-logo-fallback" style="background:${bg};color:${text};border:1px solid #2a3545;flex-direction:column;gap:2px;">
+    <span style="font-size:1rem;font-weight:900;letter-spacing:0.05em;">${code||'?'}</span>
+  </div>`;
 }
-function renderAirlineLogo(icao,ai){
-  const wrap=document.getElementById('airlineLogoWrap');
-  if(!wrap)return;
-  if(!icao){
-    wrap.innerHTML=ai?getFallbackBadgeHTML(icao,ai.bg,ai.text):'';
-    updateApiStatus('clearbit','idle','No airline code');
+function renderAirlineLogo(icao, ai) {
+  const wrap = document.getElementById('airlineLogoWrap');
+  if (!wrap) return;
+  const bg = ai ? ai.bg : '#1a2535';
+  const tc = ai ? ai.text : '#b8c8d8';
+  const label = icao || '?';
+
+  if (!icao) {
+    wrap.innerHTML = getFallbackBadgeHTML(label, bg, tc);
+    updateApiStatus('clearbit', 'idle', 'No airline code');
     return;
   }
-  const logoUrl=getLogoUrl(icao);
-  const bg=ai?ai.bg:'#1a2535';
-  const tc=ai?ai.text:'#b8c8d8';
-  const label=icao||'?';
-  const altText=ai?ai.name:icao;
-  // Inject img directly — native browser loading bypasses CORS restrictions
-  // onerror on the img element itself handles graceful fallback to badge
-  updateApiStatus('clearbit','pending','Loading logo…');
-  wrap.innerHTML=`<div class="airline-logo-wrap" id="logoImgWrap">
-    <img src="${logoUrl}" alt="${altText}"
-      onload="updateApiStatus('clearbit','ok','Logo loaded')"
-      onerror="
-        updateApiStatus('clearbit','err','No logo — using badge');
-        document.getElementById('logoImgWrap').outerHTML=getFallbackBadgeHTML('${label}','${bg}','${tc}');
-      ">
-  </div>`;
+
+  const svg = getAirlineSvg(icao);
+  if (svg) {
+    // Embedded SVG — instant, no network, no CORS
+    wrap.innerHTML = `<div class="airline-logo-wrap" style="background:transparent;border:none;padding:0;">${svg}</div>`;
+    updateApiStatus('clearbit', 'ok', `Wordmark: ${ai ? ai.name : icao}`);
+  } else {
+    // No embedded SVG — use styled badge
+    wrap.innerHTML = getFallbackBadgeHTML(label, bg, tc);
+    updateApiStatus('clearbit', 'idle', `Badge: ${ai ? ai.name : icao}`);
+  }
 }
 
 // ── API STATUS ─────────────────────────────────────────────────────────────
