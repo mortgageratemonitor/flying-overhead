@@ -40,18 +40,18 @@
   .api-status-wrap{position:relative;}
   .api-status-btn{background:transparent;border:1px solid var(--panel-border);color:var(--text-dim);padding:0.3rem 0.7rem;font-family:'Share Tech Mono',monospace;font-size:0.75rem;border-radius:4px;cursor:pointer;letter-spacing:0.05em;transition:all 0.2s;display:flex;align-items:center;gap:0.4rem;}
   .api-status-btn:hover{border-color:var(--cyan);color:var(--cyan);}
-  .api-status-panel{display:none;position:absolute;top:calc(100% + 8px);right:0;background:#0f1318;border:1px solid var(--panel-border);border-radius:6px;padding:1rem;min-width:300px;z-index:500;}
+  .api-status-panel{display:none;position:absolute;top:calc(100% + 8px);right:0;background:#0f1318;border:1px solid var(--panel-border);border-radius:6px;padding:1rem 1.25rem;min-width:420px;z-index:500;}
   .api-status-panel.open{display:block;}
   .api-status-title{font-family:'Share Tech Mono',monospace;font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-dim);margin-bottom:0.75rem;}
-  .api-row{display:flex;align-items:center;justify-content:space-between;padding:0.4rem 0;border-bottom:1px solid #1a2535;gap:0.5rem;}
+  .api-row{display:grid;grid-template-columns:130px 80px 1fr;align-items:center;padding:0.45rem 0;border-bottom:1px solid #1a2535;gap:0.75rem;}
   .api-row:last-child{border-bottom:none;}
   .api-name{font-family:'Share Tech Mono',monospace;font-size:0.82rem;color:var(--text);}
-  .api-state{font-family:'Share Tech Mono',monospace;font-size:0.78rem;}
+  .api-state{font-family:'Share Tech Mono',monospace;font-size:0.78rem;text-align:center;}
   .api-state.ok{color:var(--green);}
   .api-state.err{color:var(--red);}
   .api-state.pending{color:var(--amber);}
   .api-state.idle{color:var(--text-dim);}
-  .api-msg{font-size:0.78rem;color:var(--text-dim);max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .api-msg{font-size:0.78rem;color:var(--text-dim);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .api-global-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
   .api-global-dot.ok{background:var(--green);}
   .api-global-dot.err{background:var(--red);}
@@ -514,7 +514,7 @@ const AIRPORTS={
   "AZA":"Phoenix-Mesa Gateway","CID":"The Eastern Iowa Airport",
   "DVT":"Phoenix Deer Valley Airport","FAT":"Fresno Yosemite Intl",
   "CUL":"Bachigualato Federal Intl","CNY":"Canyonlands Field","PVR":"Licenciado Gustavo Diaz Ordaz Intl",
-  "SGU":"St. George Regional Airport","STP":"St. Paul Downtown Holman Field","DRO":"Durango-La Plata County Airport","RIL":"Garfield County Regional Airport","SJD":"Los Cabos Intl"
+  "SGU":"St. George Regional Airport","STP":"St. Paul Downtown Holman Field","DRO":"Durango-La Plata County Airport","RIL":"Garfield County Regional Airport","SJD":"Los Cabos Intl","YOW":"Ottawa Macdonald-Cartier Intl"
 };
 
 const AIRLINE_DOMAINS={
@@ -561,6 +561,7 @@ const AIRLINE_COLORS={
   'EJA':{bg:'#1a1a2e',text:'#c9a84c',name:'NetJets'},
   'JSX':{bg:'#0a1628',text:'#00b4d8',name:'JSX Air'},
   'ROU':{bg:'#c0141e',text:'#ffffff',name:'Air Canada Rouge'},
+  'FDY':{bg:'#003366',text:'#f59e0b',name:'Southern Airways Express'},
 };
 
 // Known cargo ICAO codes
@@ -642,7 +643,7 @@ const AIRLINE_SVGS = {
 
   'UAL': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#001f5b"/><text x="32" y="26" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="13" font-weight="900" fill="#ffffff">UNITED</text><line x1="10" y1="31" x2="54" y2="31" stroke="#4a90d9" stroke-width="1.5"/><text x="32" y="44" text-anchor="middle" font-family="Arial,sans-serif" font-size="9" fill="#4a90d9">AIRLINES</text><circle cx="32" cy="54" r="4" fill="none" stroke="#4a90d9" stroke-width="1"/></svg>`,
 
-  'SWA': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#304cb2"/><text x="32" y="24" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="10" font-weight="900" fill="#ffbf27">SOUTHWEST</text><line x1="8" y1="29" x2="56" y2="29" stroke="#ffbf27" stroke-width="2"/><text x="32" y="43" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="10" font-weight="900" fill="#ffffff">AIRLINES</text><rect x="26" y="47" width="12" height="3" rx="1" fill="#ffbf27"/></svg>`,
+  'SWA': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#304cb2"/><text x="32" y="24" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="9" font-weight="900" fill="#ffbf27" textLength="54" lengthAdjust="spacingAndGlyphs">SOUTHWEST</text><line x1="5" y1="29" x2="59" y2="29" stroke="#ffbf27" stroke-width="2"/><text x="32" y="43" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="9" font-weight="900" fill="#ffffff" textLength="44" lengthAdjust="spacingAndGlyphs">AIRLINES</text><rect x="26" y="48" width="12" height="3" rx="1" fill="#ffbf27"/></svg>`,
 
   'ASA': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#01426a"/><text x="32" y="24" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="12" font-weight="900" fill="#ffffff">ALASKA</text><line x1="10" y1="29" x2="54" y2="29" stroke="#00a3e0" stroke-width="1.5"/><text x="32" y="43" text-anchor="middle" font-family="Arial,sans-serif" font-size="9" fill="#00a3e0">AIRLINES</text><text x="32" y="56" text-anchor="middle" font-family="Arial,sans-serif" font-size="7" fill="#ffffff" opacity="0.6">AS</text></svg>`,
 
@@ -671,6 +672,10 @@ const AIRLINE_SVGS = {
   'EJA': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#1a1a2e"/><text x="32" y="24" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="11" font-weight="900" fill="#c9a84c">NET</text><text x="32" y="40" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="11" font-weight="900" fill="#c9a84c">JETS</text><line x1="10" y1="44" x2="54" y2="44" stroke="#c9a84c" stroke-width="1.5"/><text x="32" y="56" text-anchor="middle" font-family="Arial,sans-serif" font-size="7" fill="#c9a84c" opacity="0.7">PRIVATE AVIATION</text></svg>`,
 
   'JSX': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#0a1628"/><text x="32" y="30" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="22" font-weight="900" fill="#00b4d8">JSX</text><line x1="10" y1="36" x2="54" y2="36" stroke="#00b4d8" stroke-width="1.5"/><text x="32" y="50" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#00b4d8" opacity="0.8">HOP-ON JET</text></svg>`,
+
+  'SKW': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#002080"/><text x="32" y="24" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="9" font-weight="900" fill="#ffffff" textLength="52" lengthAdjust="spacingAndGlyphs">SKYWEST</text><line x1="8" y1="29" x2="56" y2="29" stroke="#4a90d9" stroke-width="1.5"/><text x="32" y="42" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#4a90d9" textLength="44" lengthAdjust="spacingAndGlyphs">AIRLINES</text><text x="32" y="56" text-anchor="middle" font-family="Arial,sans-serif" font-size="7" fill="#ffffff" opacity="0.5">OO</text></svg>`,
+
+  'FDY': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#003366"/><text x="32" y="20" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="8" font-weight="900" fill="#ffffff" textLength="54" lengthAdjust="spacingAndGlyphs">SOUTHERN</text><text x="32" y="32" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="8" font-weight="900" fill="#f59e0b" textLength="44" lengthAdjust="spacingAndGlyphs">AIRWAYS</text><line x1="8" y1="36" x2="56" y2="36" stroke="#f59e0b" stroke-width="1.5"/><text x="32" y="47" text-anchor="middle" font-family="Arial,sans-serif" font-size="7" fill="#ffffff" textLength="48" lengthAdjust="spacingAndGlyphs">EXPRESS</text><text x="32" y="58" text-anchor="middle" font-family="Arial,sans-serif" font-size="6" fill="#f59e0b" opacity="0.7">9X</text></svg>`,
 };
 
 function getAirlineSvg(icao) {
