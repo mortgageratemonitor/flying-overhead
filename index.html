@@ -870,7 +870,7 @@ function loadFlights() {
     })
     .then(data => {
       if (data.error) throw new Error(data.error);
-      processFlights(data.states || []);
+      processFlights(data.flights || []);
       setStatus('live', 'LIVE');
       const now = new Date();
       document.getElementById('lastUpdate').textContent =
@@ -895,20 +895,11 @@ function processFlights(states) {
   const sortBy = document.getElementById('sortBy').value;
 
   flights = states
-    .filter(s => s[5] != null && s[6] != null)
-    .map(s => {
-      const lat = s[6], lon = s[5];
-      const dist = (userLat && userLon) ? haversine(userLat, userLon, lat, lon) : 0;
+    .filter(f => f.lat != null && f.lon != null)
+    .map(f => {
+      const dist = (userLat && userLon) ? haversine(userLat, userLon, f.lat, f.lon) : 0;
       return {
-        icao: s[0],
-        callsign: (s[1] || '').trim(),
-        country: s[2] || '—',
-        lat, lon,
-        altM: s[7] || s[13] || 0,
-        onGround: s[8],
-        speed: s[9] || 0,
-        heading: s[10] || 0,
-        vertRate: s[11] || 0,
+        ...f,
         dist: Math.round(dist),
       };
     });
@@ -991,9 +982,9 @@ function selectFlight(idx) {
   document.getElementById('ledCountry').textContent = f.country;
 
   document.getElementById('ledRoute').innerHTML = `
-    <span class="led-airport">${prefix || '---'}</span>
+    <span class="led-airport">${f.depIata || '---'}</span>
     <span class="led-arrow"> ──► </span>
-    <span class="led-airport">${num || '---'}</span>
+    <span class="led-airport">${f.arrIata || '---'}</span>
   `;
 
   document.getElementById('ledDisplay').classList.add('update-flash');
