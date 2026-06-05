@@ -275,6 +275,8 @@
     </div>
   </div>
   <div class="header-right">
+    <span id="flightsTodayPill" style="font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:var(--text-dim);display:flex;align-items:center;gap:0.35rem;">✈ <span id="flightsTodayCount">0</span> today</span>
+    <div class="vr"></div>
     <span class="datetime" id="datetimeDisplay">—</span>
     <div class="vr"></div>
     <div class="status-pill">
@@ -416,7 +418,8 @@
         <div class="stat-card"><span class="stat-label">Country</span><span class="stat-value" id="nCountry" style="font-size:0.9rem;">—</span></div>
       </div>
       <!-- NARRATIVE -->
-      <div class="narrative-box" id="nNarrative">Enter a location and refresh to begin tracking aircraft overhead.<div class="narrative-story" id="nStory" style="display:none;"></div></div>
+      <div class="narrative-box" id="nNarrative">Enter a location and refresh to begin tracking aircraft overhead.</div>
+      <div class="narrative-story" id="nStory" style="display:none;"></div>
     </div>
 
     <!-- RADAR CORNER -->
@@ -462,6 +465,34 @@
     </div>
   </div>
 
+  <!-- AIRCRAFT TABLE -->
+  <div class="table-panel">
+    <div class="table-header">
+      <span class="section-label">// aircraft overhead</span>
+      <span class="count-badge" id="countBadge">0 tracked</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Callsign</th><th>Airline</th><th>Type</th><th>AC Category</th>
+            <th>Origin</th><th>Destination</th><th>Altitude</th><th>Speed</th>
+            <th>Hdg °</th><th>Dir</th><th>Distance</th><th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="flightBody">
+          <tr><td colspan="12">
+            <div class="empty-state">
+              <div class="empty-icon">✈</div>
+              <div class="empty-title">NO SIGNAL</div>
+              <div class="empty-sub">Enter a location and press Find, then Refresh to begin tracking nearby aircraft.</div>
+            </div>
+          </td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
   <!-- HISTORY PANEL -->
   <div class="history-panel" id="historyPanel">
     <div class="history-header" onclick="toggleHistory()">
@@ -494,34 +525,6 @@
           </div>
         </div>
       </div>
-    </div>
-  </div>
-
-  <!-- AIRCRAFT TABLE -->
-  <div class="table-panel">
-    <div class="table-header">
-      <span class="section-label">// aircraft overhead</span>
-      <span class="count-badge" id="countBadge">0 tracked</span>
-    </div>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Callsign</th><th>Airline</th><th>Type</th><th>AC Category</th>
-            <th>Origin</th><th>Destination</th><th>Altitude</th><th>Speed</th>
-            <th>Hdg °</th><th>Dir</th><th>Distance</th><th>Status</th>
-          </tr>
-        </thead>
-        <tbody id="flightBody">
-          <tr><td colspan="12">
-            <div class="empty-state">
-              <div class="empty-icon">✈</div>
-              <div class="empty-title">NO SIGNAL</div>
-              <div class="empty-sub">Enter a location and press Find, then Refresh to begin tracking nearby aircraft.</div>
-            </div>
-          </td></tr>
-        </tbody>
-      </table>
     </div>
   </div>
 </div>
@@ -633,7 +636,13 @@ const AIRPORTS={
   "SBD":"San Bernardino Intl","VEL":"Vernal Regional Airport",
   "PIE":"St. Pete-Clearwater Intl","SAF":"Santa Fe Municipal Airport",
   "MSN":"Dane County Regional Airport","COE":"Coeur d Alene Airport",
-  "CLD":"Palomar Airport","CDE":"Coudersport Airport"
+  "CLD":"Palomar Airport","CDE":"Coudersport Airport",
+  "MSO":"Missoula Montana Airport","PAE":"Paine Field Snohomish County Airport",
+  "AST":"Astoria Regional Airport","STS":"Charles M. Schulz Sonoma County Airport",
+  "IAD":"Washington Dulles Intl","HPN":"Westchester County Airport",
+  "IGM":"Kingman Airport","SDL":"Scottsdale Airport",
+  "ISP":"Long Island MacArthur Airport","ALB":"Albany Intl",
+  "EUG":"Eugene Airport Mahlon Sweet Field","SOW":"Show Low Regional Airport"
 };
 
 // ── COUNTRY CODE → FULL NAME ─────────────────────────────────────────────────
@@ -724,6 +733,14 @@ const AIRLINE_COLORS={
   'SCX':{bg:'#d4001a',text:'#f0c040',name:'Sun Country Airlines'},
   'AAY':{bg:'#ff6600',text:'#000080',name:'Allegiant Air'},
   'CTF':{bg:'#003087',text:'#ffffff',name:'Cutter Aviation'},
+  'VOI':{bg:'#6b21a8',text:'#ffffff',name:'Volaris'},
+  'VAR':{bg:'#005bab',text:'#ffffff',name:'Veca Airlines'},
+  'WSN':{bg:'#1e3a5f',text:'#ffffff',name:'Advanced Air'},
+  'KEN':{bg:'#1a5276',text:'#ffffff',name:'Kenmore Air'},
+  'ATN':{bg:'#7b3f00',text:'#ffffff',name:'Air Transport International'},
+  'AMX':{bg:'#003087',text:'#4da6ff',name:'Aeromexico'},
+  'AMF':{bg:'#1a1a1a',text:'#ff6600',name:'Ameriflight'},
+  'QXE':{bg:'#003087',text:'#00aaff',name:'Horizon Air'},
 };
 
 // Known cargo ICAO codes
@@ -858,6 +875,22 @@ const AIRLINE_SVGS = {
   'FDX': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#4d148c"/><text x="32" y="28" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="16" font-weight="900" fill="#ffffff">Fed</text><text x="32" y="46" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="16" font-weight="900" fill="#ff6200">Ex</text></svg>`,
 
   'CTF': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#003087"/><text x="32" y="22" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="9" font-weight="900" fill="#ffffff" textLength="52" lengthAdjust="spacingAndGlyphs">CUTTER</text><line x1="8" y1="27" x2="56" y2="27" stroke="#7eb8e8" stroke-width="1.5"/><text x="32" y="41" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="9" font-weight="900" fill="#7eb8e8" textLength="48" lengthAdjust="spacingAndGlyphs">AVIATION</text><text x="32" y="56" text-anchor="middle" font-family="Arial,sans-serif" font-size="7" fill="#ffffff" opacity="0.5">FBO · CHARTER</text></svg>`,
+
+  'VOI': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#6b21a8"/><text x="32" y="26" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="14" font-weight="900" fill="#ffffff" textLength="52" lengthAdjust="spacingAndGlyphs">VOLARIS</text><line x1="8" y1="32" x2="56" y2="32" stroke="#d8b4fe" stroke-width="1.5"/><text x="32" y="45" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#d8b4fe" textLength="34" lengthAdjust="spacingAndGlyphs">Y4</text><circle cx="32" cy="54" r="4" fill="#d8b4fe" opacity="0.4"/></svg>`,
+
+  'VAR': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#005bab"/><text x="32" y="22" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="10" font-weight="900" fill="#ffffff" textLength="48" lengthAdjust="spacingAndGlyphs">VECA</text><line x1="8" y1="27" x2="56" y2="27" stroke="#7ec8ff" stroke-width="1.5"/><text x="32" y="41" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="9" font-weight="900" fill="#7ec8ff" textLength="48" lengthAdjust="spacingAndGlyphs">AIRLINES</text><text x="32" y="56" text-anchor="middle" font-family="Arial,sans-serif" font-size="7" fill="#ffffff" opacity="0.5">EL SALVADOR</text></svg>`,
+
+  'WSN': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#1e3a5f"/><text x="32" y="22" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="9" font-weight="900" fill="#ffffff" textLength="52" lengthAdjust="spacingAndGlyphs">ADVANCED</text><line x1="8" y1="27" x2="56" y2="27" stroke="#5ba3d9" stroke-width="1.5"/><text x="32" y="41" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="13" font-weight="900" fill="#5ba3d9" textLength="40" lengthAdjust="spacingAndGlyphs">AIR</text><text x="32" y="56" text-anchor="middle" font-family="Arial,sans-serif" font-size="6" fill="#ffffff" opacity="0.5">WINGSPAN</text></svg>`,
+
+  'KEN': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#1a5276"/><text x="32" y="22" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="9" font-weight="900" fill="#ffffff" textLength="52" lengthAdjust="spacingAndGlyphs">KENMORE</text><line x1="8" y1="27" x2="56" y2="27" stroke="#7fb3d3" stroke-width="1.5"/><text x="32" y="41" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="13" font-weight="900" fill="#7fb3d3" textLength="40" lengthAdjust="spacingAndGlyphs">AIR</text><text x="32" y="56" text-anchor="middle" font-family="Arial,sans-serif" font-size="6" fill="#ffffff" opacity="0.5">SEAPLANE</text></svg>`,
+
+  'ATN': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#7b3f00"/><text x="32" y="18" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="7" font-weight="900" fill="#ffffff" textLength="54" lengthAdjust="spacingAndGlyphs">AIR TRANSPORT</text><line x1="8" y1="22" x2="56" y2="22" stroke="#f39c12" stroke-width="1.5"/><text x="32" y="37" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="9" font-weight="900" fill="#f39c12" textLength="52" lengthAdjust="spacingAndGlyphs">INTL</text><text x="32" y="52" text-anchor="middle" font-family="Arial,sans-serif" font-size="7" fill="#ffffff" textLength="40" lengthAdjust="spacingAndGlyphs">CARGO</text></svg>`,
+
+  'AMX': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#003087"/><text x="32" y="22" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="8" font-weight="900" fill="#4da6ff" textLength="54" lengthAdjust="spacingAndGlyphs">AEROMEXICO</text><line x1="8" y1="27" x2="56" y2="27" stroke="#4da6ff" stroke-width="1.5"/><text x="32" y="41" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="11" font-weight="900" fill="#ffffff" textLength="40" lengthAdjust="spacingAndGlyphs">AM</text><text x="32" y="56" text-anchor="middle" font-family="Arial,sans-serif" font-size="6" fill="#4da6ff" opacity="0.8">MEXICO</text></svg>`,
+
+  'AMF': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#1a1a1a"/><text x="32" y="20" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="8" font-weight="900" fill="#ff6600" textLength="52" lengthAdjust="spacingAndGlyphs">AMERI</text><text x="32" y="34" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="8" font-weight="900" fill="#ff6600" textLength="44" lengthAdjust="spacingAndGlyphs">FLIGHT</text><line x1="8" y1="38" x2="56" y2="38" stroke="#ff6600" stroke-width="1.5"/><text x="32" y="52" text-anchor="middle" font-family="Arial,sans-serif" font-size="7" fill="#ffffff" textLength="36" lengthAdjust="spacingAndGlyphs">CARGO</text></svg>`,
+
+  'QXE': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#003087"/><text x="32" y="22" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="10" font-weight="900" fill="#00aaff" textLength="52" lengthAdjust="spacingAndGlyphs">HORIZON</text><line x1="8" y1="27" x2="56" y2="27" stroke="#00aaff" stroke-width="1.5"/><text x="32" y="41" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="13" font-weight="900" fill="#ffffff" textLength="36" lengthAdjust="spacingAndGlyphs">AIR</text><text x="32" y="56" text-anchor="middle" font-family="Arial,sans-serif" font-size="6" fill="#00aaff" opacity="0.8">ALASKA GROUP · QX</text></svg>`,
 };
 
 function getAirlineSvg(icao) {
@@ -1051,6 +1084,7 @@ function clearNearestPanel() {
   document.getElementById('nStatus').style.color = 'var(--text-dim)';
   document.getElementById('nCountry').textContent = '—';
   document.getElementById('nNarrative').textContent = 'No aircraft detected in range. Try a larger radius or check back later.';
+  const stEl=document.getElementById('nStory');if(stEl)stEl.style.display='none';
   document.getElementById('airlineLogoWrap').innerHTML = '';
   updateApiStatus('clearbit', 'idle', 'No aircraft');
 }
@@ -1180,6 +1214,7 @@ function renderNarrative(f,ai,cat,kts){
     :f.depIata?`, departing from <strong>${airportName(f.depIata)}</strong>`
     :f.arrIata?`, arriving at <strong>${airportName(f.arrIata)}</strong>`:'';
   const dist=`It is <strong>${kmToMiles(f.dist)} miles</strong> from your location.`;
+  // Set textContent-safe innerHTML — does NOT touch sibling #nStory
   el.innerHTML=`${cs}${airline?' is '+airline:' is'} ${type}, ${status}${route}. ${dist}`;
 }
 
@@ -1574,6 +1609,8 @@ function updateHistoryUI() {
   // Header strip
   const todayCount = todayRecords.reduce((s, r) => s + r.count, 0);
   document.getElementById('hToday').textContent = todayCount;
+  const todayPill=document.getElementById('flightsTodayCount');
+  if(todayPill)todayPill.textContent=todayCount;
 
   const peakRecord = todayRecords.reduce((best, r) => (!best || r.count > best.count) ? r : best, null);
   if (peakRecord) {
