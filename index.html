@@ -203,6 +203,58 @@
   .update-flash{animation:flash 0.4s ease;}
   .led-blink{animation:blink 1s step-end infinite;}
   @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+  /* TOAST NOTIFICATIONS */
+  .toast-container{position:fixed;top:1rem;right:1rem;z-index:9998;display:flex;flex-direction:column;gap:0.5rem;pointer-events:none;}
+  .toast{background:#0f1318;border:1px solid var(--panel-border);border-radius:6px;padding:0.65rem 1rem;font-family:'Share Tech Mono',monospace;font-size:0.8rem;max-width:320px;pointer-events:auto;box-shadow:0 4px 20px rgba(0,0,0,0.6);display:flex;align-items:flex-start;gap:0.6rem;animation:toastIn 0.3s ease;position:relative;}
+  @keyframes toastIn{from{transform:translateX(120%);opacity:0}to{transform:translateX(0);opacity:1}}
+  @keyframes toastOut{from{transform:translateX(0);opacity:1}to{transform:translateX(120%);opacity:0}}
+  .toast.hiding{animation:toastOut 0.3s ease forwards;}
+  .toast-icon{font-size:1rem;flex-shrink:0;margin-top:1px;}
+  .toast-body{display:flex;flex-direction:column;gap:2px;}
+  .toast-title{color:var(--text);font-size:0.8rem;letter-spacing:0.05em;}
+  .toast-msg{color:var(--text-dim);font-size:0.75rem;line-height:1.4;}
+  .toast.military{border-color:var(--amber);}
+  .toast.military .toast-title{color:var(--amber);}
+  .toast.lowalt{border-color:var(--cyan);}
+  .toast.lowalt .toast-title{color:var(--cyan);}
+  .toast.surge{border-color:var(--green);}
+  .toast.surge .toast-title{color:var(--green);}
+  .toast.intl{border-color:#a78bfa;}
+  .toast.intl .toast-title{color:#a78bfa;}
+
+  /* HISTORY PANEL */
+  .history-panel{background:var(--panel);border:1px solid var(--panel-border);border-radius:8px;overflow:hidden;}
+  .history-header{display:flex;align-items:center;justify-content:space-between;padding:0.7rem 1.25rem;cursor:pointer;user-select:none;transition:background 0.15s;}
+  .history-header:hover{background:#141a22;}
+  .history-header-left{display:flex;align-items:center;gap:1rem;}
+  .history-chevron{font-size:0.7rem;color:var(--text-dim);transition:transform 0.25s;}
+  .history-chevron.open{transform:rotate(90deg);}
+  .history-stats-strip{display:flex;gap:1.5rem;font-family:'Share Tech Mono',monospace;font-size:0.8rem;color:var(--text-dim);}
+  .history-stat-val{color:var(--cyan);}
+  .history-body{display:none;padding:1rem 1.25rem;border-top:1px solid var(--panel-border);}
+  .history-body.open{display:block;}
+  .history-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;}
+  .history-section-title{font-family:'Share Tech Mono',monospace;font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-dim);margin-bottom:0.5rem;}
+  .history-notable{display:flex;flex-direction:column;gap:0.3rem;max-height:140px;overflow-y:auto;}
+  .history-notable-item{font-size:0.8rem;color:var(--text-dim);padding:0.25rem 0;border-bottom:1px solid #151c24;display:flex;gap:0.5rem;}
+  .history-notable-item:last-child{border-bottom:none;}
+  .history-notable-time{font-family:'Share Tech Mono',monospace;font-size:0.72rem;color:#4a6080;flex-shrink:0;}
+  .history-bests{display:flex;flex-direction:column;gap:0.4rem;}
+  .history-best-row{display:flex;justify-content:space-between;align-items:baseline;font-size:0.82rem;padding:0.2rem 0;border-bottom:1px solid #151c24;}
+  .history-best-row:last-child{border-bottom:none;}
+  .history-best-label{color:var(--text-dim);}
+  .history-best-val{font-family:'Share Tech Mono',monospace;color:var(--cyan);font-size:0.8rem;}
+
+  /* MINI BAR CHART */
+  .mini-chart{display:flex;align-items:flex-end;gap:3px;height:40px;margin-bottom:0.75rem;}
+  .mini-bar-wrap{display:flex;flex-direction:column;align-items:center;gap:2px;flex:1;}
+  .mini-bar{background:var(--cyan-dim);border-radius:2px 2px 0 0;width:100%;min-height:2px;transition:background 0.2s;}
+  .mini-bar.active{background:var(--cyan);}
+  .mini-bar-label{font-family:'Share Tech Mono',monospace;font-size:0.55rem;color:#4a6080;white-space:nowrap;}
+
+  /* STORY LINE */
+  .narrative-story{margin-top:0.5rem;padding-top:0.5rem;border-top:1px solid var(--panel-border);font-size:0.9rem;color:var(--cyan);font-style:italic;line-height:1.5;}
 </style>
 </head>
 <body>
@@ -364,7 +416,7 @@
         <div class="stat-card"><span class="stat-label">Country</span><span class="stat-value" id="nCountry" style="font-size:0.9rem;">—</span></div>
       </div>
       <!-- NARRATIVE -->
-      <div class="narrative-box" id="nNarrative">Enter a location and refresh to begin tracking aircraft overhead.</div>
+      <div class="narrative-box" id="nNarrative">Enter a location and refresh to begin tracking aircraft overhead.<div class="narrative-story" id="nStory" style="display:none;"></div></div>
     </div>
 
     <!-- RADAR CORNER -->
@@ -410,6 +462,41 @@
     </div>
   </div>
 
+  <!-- HISTORY PANEL -->
+  <div class="history-panel" id="historyPanel">
+    <div class="history-header" onclick="toggleHistory()">
+      <div class="history-header-left">
+        <span class="section-label">// flight history</span>
+        <span class="history-stats-strip" id="historyStrip">
+          <span>Today: <span class="history-stat-val" id="hToday">0</span></span>
+          <span>Peak: <span class="history-stat-val" id="hPeak">—</span></span>
+          <span>Streak: <span class="history-stat-val" id="hStreak">—</span></span>
+        </span>
+      </div>
+      <span class="history-chevron" id="historyChevron">&#9654;</span>
+    </div>
+    <div class="history-body" id="historyBody">
+      <div class="mini-chart" id="miniChart"></div>
+      <div class="history-grid">
+        <div>
+          <div class="history-section-title">Notable Sightings Today</div>
+          <div class="history-notable" id="historyNotable">
+            <div class="history-notable-item"><span class="history-notable-time">--:--</span><span>No notable sightings yet</span></div>
+          </div>
+        </div>
+        <div>
+          <div class="history-section-title">All-Time Bests</div>
+          <div class="history-bests" id="historyBests">
+            <div class="history-best-row"><span class="history-best-label">Most aircraft</span><span class="history-best-val" id="bestCount">—</span></div>
+            <div class="history-best-row"><span class="history-best-label">Highest altitude</span><span class="history-best-val" id="bestAlt">—</span></div>
+            <div class="history-best-row"><span class="history-best-label">Total flights seen</span><span class="history-best-val" id="bestTotal">—</span></div>
+            <div class="history-best-row"><span class="history-best-label">Most active day</span><span class="history-best-val" id="bestDay">—</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- AIRCRAFT TABLE -->
   <div class="table-panel">
     <div class="table-header">
@@ -451,6 +538,9 @@
   <span class="ticker-item">TAILS ON RADAR DOTS SHOW HEADING DIRECTION</span>
   <span class="ticker-item">CLICK ANY RADAR DOT TO IDENTIFY AIRCRAFT</span>
 </div></div>
+
+<!-- Toast container -->
+<div class="toast-container" id="toastContainer"></div>
 
 <!-- Proxy Modal -->
 <div class="modal-overlay" id="proxyModal">
@@ -995,9 +1085,12 @@ function processFlights(states){
   else if(sortBy==='altitude')flights.sort((a,b)=>b.altM-a.altM);
   else if(sortBy==='speed')flights.sort((a,b)=>b.speed-a.speed);
   document.getElementById('countBadge').textContent=flights.length+' tracked';
+  checkAlerts(flights);
+  recordRefresh(flights);
   renderTable();renderStats();
   if(flights.length>0){
     selectFlight(0);renderRadar();
+    renderStory(flights);
   } else {
     clearNearestPanel();
     clearRadar();
@@ -1310,10 +1403,344 @@ function resetCountdown(){
   },1000);
 }
 
+// ── HISTORY & STORIES & ALERTS ────────────────────────────────────────────
+
+const HISTORY_KEY = 'flyingoverhead_history';
+const BESTS_KEY   = 'flyingoverhead_bests';
+const STREAK_KEY  = 'flyingoverhead_streak';
+
+// Unusual countries (not US/CA/MX or common EU/western)
+const COMMON_COUNTRIES = new Set([
+  'US','CA','MX','GB','DE','FR','NL','ES','IT','PT','IE','BE','CH','AT',
+  'DK','SE','NO','FI','PL','CZ','HU','GR','AU','NZ','JP','KR','SG'
+]);
+
+// ── TOAST SYSTEM ─────────────────────────────────────────────────────────────
+const toastQueue = [];
+let toastActive = false;
+
+function queueToast(type, title, msg) {
+  toastQueue.push({ type, title, msg });
+  if (!toastActive) drainToastQueue();
+}
+
+function drainToastQueue() {
+  if (!toastQueue.length) { toastActive = false; return; }
+  toastActive = true;
+  const { type, title, msg } = toastQueue.shift();
+  const container = document.getElementById('toastContainer');
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  const icons = { military:'★', lowalt:'↓', surge:'↑', intl:'🌐' };
+  el.innerHTML = `<span class="toast-icon">${icons[type]||'●'}</span>
+    <div class="toast-body">
+      <span class="toast-title">${title}</span>
+      <span class="toast-msg">${msg}</span>
+    </div>`;
+  container.appendChild(el);
+  setTimeout(() => {
+    el.classList.add('hiding');
+    setTimeout(() => { el.remove(); drainToastQueue(); }, 320);
+  }, 5000);
+}
+
+// ── ALERT TRIGGERS ────────────────────────────────────────────────────────────
+let prevFlightCallsigns = new Set();
+let prevCount = 0;
+
+function checkAlerts(flights) {
+  const currentCallsigns = new Set(flights.map(f => f.callsign || f.icao));
+
+  // 1. Military aircraft
+  flights.forEach(f => {
+    const cs = (f.callsign || '').toUpperCase();
+    const isMil = MILITARY_PREFIXES.some(p => cs.startsWith(p));
+    if (isMil && !prevFlightCallsigns.has(f.callsign)) {
+      const kts = kmhToKnots(f.speed * 3.6);
+      queueToast('military', '★ MILITARY AIRCRAFT',
+        `${f.callsign || f.icao} · ${metersToFeet(f.altM).toLocaleString()} ft · ${kmToMiles(f.dist)} mi · ${kts} kts`);
+    }
+  });
+
+  // 2. Low altitude aircraft (below 3000 ft, airborne)
+  flights.forEach(f => {
+    const altFt = metersToFeet(f.altM);
+    if (!f.onGround && altFt > 0 && altFt < 3000 && !prevFlightCallsigns.has(f.callsign)) {
+      queueToast('lowalt', '↓ LOW ALTITUDE AIRCRAFT',
+        `${f.callsign || f.icao} · ${altFt.toLocaleString()} ft · ${headingDir(f.heading)} · ${kmToMiles(f.dist)} mi away`);
+    }
+  });
+
+  // 3. Count surge (5+ more than previous refresh)
+  const surge = flights.length - prevCount;
+  if (prevCount > 0 && surge >= 5) {
+    queueToast('surge', '↑ TRAFFIC SURGE',
+      `${flights.length} aircraft overhead — ${surge} more than last refresh`);
+  }
+
+  // 4. Unusual country
+  flights.forEach(f => {
+    const code = (f.country || '').toUpperCase();
+    if (code && !COMMON_COUNTRIES.has(code) && !prevFlightCallsigns.has(f.callsign)) {
+      queueToast('intl', '🌐 UNUSUAL REGISTRATION',
+        `${f.callsign || f.icao} · Registered in ${countryName(f.country)}`);
+    }
+  });
+
+  prevFlightCallsigns = currentCallsigns;
+  prevCount = flights.length;
+}
+
+// ── HISTORY LOG ───────────────────────────────────────────────────────────────
+function loadHistory() {
+  try { return JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]'); }
+  catch { return []; }
+}
+
+function saveHistory(records) {
+  // Keep only last 7 days
+  const cutoff = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const trimmed = records.filter(r => r.ts > cutoff);
+  try { localStorage.setItem(HISTORY_KEY, JSON.stringify(trimmed)); } catch {}
+}
+
+function loadBests() {
+  try { return JSON.parse(localStorage.getItem(BESTS_KEY) || '{}'); }
+  catch { return {}; }
+}
+
+function saveBests(bests) {
+  try { localStorage.setItem(BESTS_KEY, JSON.stringify(bests)); } catch {}
+}
+
+function recordRefresh(flights) {
+  const now = Date.now();
+  const notable = [];
+
+  flights.forEach(f => {
+    const cs = (f.callsign || f.icao || '').toUpperCase();
+    const isMil = MILITARY_PREFIXES.some(p => cs.startsWith(p));
+    const altFt = metersToFeet(f.altM);
+    const isCargo = CARGO_ICAO.has((f.airlineIcao || '').toUpperCase());
+    const isLow = !f.onGround && altFt > 0 && altFt < 3000;
+    const isUnusual = f.country && !COMMON_COUNTRIES.has(f.country.toUpperCase());
+
+    if (isMil)     notable.push({ type:'military', cs: f.callsign||f.icao, detail:`${altFt.toLocaleString()} ft`, ts: now });
+    if (isCargo)   notable.push({ type:'cargo',    cs: f.callsign||f.icao, detail:`${(getAirlineInfo(f.airlineIcao)||{name:f.airlineIcao}).name}`, ts: now });
+    if (isLow)     notable.push({ type:'lowalt',   cs: f.callsign||f.icao, detail:`${altFt.toLocaleString()} ft`, ts: now });
+    if (isUnusual) notable.push({ type:'intl',     cs: f.callsign||f.icao, detail:countryName(f.country), ts: now });
+  });
+
+  const maxAlt = flights.reduce((m, f) => Math.max(m, metersToFeet(f.altM)), 0);
+  const record = { ts: now, count: flights.length, notable, maxAlt };
+
+  const history = loadHistory();
+  history.push(record);
+  saveHistory(history);
+
+  // Update bests
+  const bests = loadBests();
+  let changed = false;
+  if (!bests.maxCount || flights.length > bests.maxCount) {
+    bests.maxCount = flights.length;
+    bests.maxCountTs = now;
+    changed = true;
+  }
+  if (!bests.maxAlt || maxAlt > bests.maxAlt) {
+    bests.maxAlt = maxAlt;
+    bests.maxAltCs = flights.find(f => metersToFeet(f.altM) === maxAlt)?.callsign || '—';
+    changed = true;
+  }
+  bests.totalSeen = (bests.totalSeen || 0) + flights.length;
+
+  // Most active day
+  const today = new Date().toLocaleDateString();
+  if (!bests.dayMap) bests.dayMap = {};
+  bests.dayMap[today] = (bests.dayMap[today] || 0) + flights.length;
+  const bestDayEntry = Object.entries(bests.dayMap).sort((a,b) => b[1]-a[1])[0];
+  if (bestDayEntry) { bests.bestDay = bestDayEntry[0]; bests.bestDayCount = bestDayEntry[1]; }
+
+  saveBests(bests);
+  updateHistoryUI();
+}
+
+function updateHistoryUI() {
+  const history = loadHistory();
+  const bests = loadBests();
+  const now = Date.now();
+  const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+  const todayRecords = history.filter(r => r.ts >= todayStart.getTime());
+
+  // Header strip
+  const todayCount = todayRecords.reduce((s, r) => s + r.count, 0);
+  document.getElementById('hToday').textContent = todayCount;
+
+  const peakRecord = todayRecords.reduce((best, r) => (!best || r.count > best.count) ? r : best, null);
+  if (peakRecord) {
+    const t = new Date(peakRecord.ts);
+    let h = t.getHours(), m = String(t.getMinutes()).padStart(2,'0');
+    const ap = h >= 12 ? 'PM' : 'AM'; h = h % 12 || 12;
+    document.getElementById('hPeak').textContent = `${peakRecord.count} at ${h}:${m} ${ap}`;
+  }
+
+  // Streak
+  const streak = calcStreak(history);
+  document.getElementById('hStreak').textContent = streak === 1 ? '1 day' : `${streak} days`;
+
+  // Mini bar chart (last 12 refreshes today)
+  const chart = document.getElementById('miniChart');
+  const recent = todayRecords.slice(-12);
+  const maxC = Math.max(...recent.map(r => r.count), 1);
+  chart.innerHTML = recent.map(r => {
+    const pct = Math.max(8, Math.round((r.count / maxC) * 100));
+    const t = new Date(r.ts);
+    let h = t.getHours() % 12 || 12;
+    const ap = t.getHours() >= 12 ? 'p' : 'a';
+    return `<div class="mini-bar-wrap">
+      <div class="mini-bar" style="height:${pct}%;" title="${r.count} aircraft"></div>
+      <span class="mini-bar-label">${h}${ap}</span>
+    </div>`;
+  }).join('');
+
+  // Notable sightings
+  const notable = document.getElementById('historyNotable');
+  const allNotable = todayRecords.flatMap(r => r.notable || []);
+  // Deduplicate by callsign
+  const seen = new Set();
+  const unique = allNotable.filter(n => { if (seen.has(n.cs)) return false; seen.add(n.cs); return true; });
+  if (unique.length === 0) {
+    notable.innerHTML = '<div class="history-notable-item"><span class="history-notable-time">—</span><span>No notable sightings yet</span></div>';
+  } else {
+    const typeLabel = { military:'★ Military', cargo:'📦 Cargo', lowalt:'↓ Low Alt', intl:'🌐 Intl Reg' };
+    notable.innerHTML = unique.slice(-10).reverse().map(n => {
+      const t = new Date(n.ts);
+      let h = t.getHours() % 12 || 12;
+      const ap = t.getHours() >= 12 ? 'PM' : 'AM';
+      const m = String(t.getMinutes()).padStart(2,'0');
+      return `<div class="history-notable-item">
+        <span class="history-notable-time">${h}:${m} ${ap}</span>
+        <span>${typeLabel[n.type]||n.type} · <strong style="color:var(--text)">${n.cs}</strong> · ${n.detail}</span>
+      </div>`;
+    }).join('');
+  }
+
+  // Bests
+  document.getElementById('bestCount').textContent = bests.maxCount ? `${bests.maxCount} aircraft` : '—';
+  document.getElementById('bestAlt').textContent = bests.maxAlt ? `${bests.maxAlt.toLocaleString()} ft` : '—';
+  document.getElementById('bestTotal').textContent = bests.totalSeen ? bests.totalSeen.toLocaleString() : '—';
+  document.getElementById('bestDay').textContent = bests.bestDay ? `${bests.bestDay} (${bests.bestDayCount})` : '—';
+}
+
+function calcStreak(history) {
+  if (!history.length) return 0;
+  const days = new Set(history.map(r => new Date(r.ts).toLocaleDateString()));
+  let streak = 0, d = new Date();
+  while (true) {
+    if (days.has(d.toLocaleDateString())) { streak++; d.setDate(d.getDate() - 1); }
+    else break;
+  }
+  return streak;
+}
+
+function toggleHistory() {
+  const body = document.getElementById('historyBody');
+  const chev = document.getElementById('historyChevron');
+  body.classList.toggle('open');
+  chev.classList.toggle('open');
+}
+
+// ── STORIES ENGINE ────────────────────────────────────────────────────────────
+// Track seen callsigns across refreshes for circling detection
+const callsignRefreshCount = {};
+
+function generateStory(flights) {
+  if (!flights.length) return null;
+
+  const history = loadHistory();
+  const airborne = flights.filter(f => !f.onGround);
+  const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+  const todayRecords = history.filter(r => r.ts >= todayStart.getTime());
+  const recentCounts = todayRecords.slice(-5).map(r => r.count);
+  const avgRecent = recentCounts.length ? Math.round(recentCounts.reduce((a,b)=>a+b,0)/recentCounts.length) : 0;
+
+  // Update circling tracker
+  flights.forEach(f => {
+    const k = f.callsign || f.icao;
+    callsignRefreshCount[k] = (callsignRefreshCount[k] || 0) + 1;
+  });
+  // Decay old entries not in current list
+  const currentSet = new Set(flights.map(f => f.callsign || f.icao));
+  Object.keys(callsignRefreshCount).forEach(k => { if (!currentSet.has(k)) delete callsignRefreshCount[k]; });
+
+  // Priority 1: Military
+  const milFlights = flights.filter(f => MILITARY_PREFIXES.some(p => (f.callsign||'').toUpperCase().startsWith(p)));
+  if (milFlights.length) {
+    const m = milFlights[0];
+    return `★ Military aircraft detected — ${m.callsign||m.icao} is ${metersToFeet(m.altM).toLocaleString()} ft overhead.`;
+  }
+
+  // Priority 2: Circling aircraft (seen 3+ consecutive refreshes)
+  const circling = flights.filter(f => callsignRefreshCount[f.callsign||f.icao] >= 3);
+  if (circling.length) {
+    const c = circling[0];
+    const mins = callsignRefreshCount[c.callsign||c.icao] * 5;
+    return `◌ ${c.callsign||c.icao} has been in your area for ~${mins} minutes — possible holding pattern or training flight.`;
+  }
+
+  // Priority 3: Count significantly above/below average
+  if (avgRecent > 0) {
+    if (flights.length >= avgRecent + 5) return `↑ Unusually busy — ${flights.length} aircraft overhead, ${flights.length - avgRecent} more than your recent average.`;
+    if (flights.length <= avgRecent - 5 && flights.length > 0) return `↓ Quieter than usual — only ${flights.length} aircraft vs your recent average of ${avgRecent}.`;
+  }
+
+  // Priority 4: Dominant heading
+  if (airborne.length >= 4) {
+    const dirCounts = {};
+    airborne.forEach(f => {
+      const d = headingDir(f.heading);
+      dirCounts[d] = (dirCounts[d] || 0) + 1;
+    });
+    const topDir = Object.entries(dirCounts).sort((a,b)=>b[1]-a[1])[0];
+    if (topDir && topDir[1] >= Math.ceil(airborne.length * 0.6)) {
+      return `→ ${topDir[1]} of ${airborne.length} airborne aircraft are heading ${topDir[0]} — likely following a shared corridor or jet stream.`;
+    }
+  }
+
+  // Priority 5: Unusual altitude extremes
+  const highest = airborne.reduce((best, f) => f.altM > (best?.altM||0) ? f : best, null);
+  if (highest && metersToFeet(highest.altM) > 42000) {
+    return `▲ ${highest.callsign||highest.icao} is flying unusually high at ${metersToFeet(highest.altM).toLocaleString()} ft — well above typical cruise altitude.`;
+  }
+  const lowest = airborne.filter(f => metersToFeet(f.altM) < 5000 && metersToFeet(f.altM) > 500);
+  if (lowest.length) {
+    return `↓ ${lowest[0].callsign||lowest[0].icao} is flying low at ${metersToFeet(lowest[0].altM).toLocaleString()} ft — watch for it on approach or departure.`;
+  }
+
+  // Priority 6: Cargo concentration
+  const cargo = flights.filter(f => CARGO_ICAO.has((f.airlineIcao||'').toUpperCase()));
+  if (cargo.length >= 2) return `📦 ${cargo.length} cargo aircraft overhead right now — ${cargo.map(f=>f.callsign||f.icao).join(', ')}.`;
+
+  // Default
+  return `${flights.length} aircraft tracked — ${airborne.length} airborne, ${flights.length - airborne.length} on the ground.`;
+}
+
+function renderStory(flights) {
+  const storyEl = document.getElementById('nStory');
+  if (!storyEl) return;
+  const story = generateStory(flights);
+  if (story) {
+    storyEl.textContent = story;
+    storyEl.style.display = 'block';
+  } else {
+    storyEl.style.display = 'none';
+  }
+}
+
 // ── INIT ───────────────────────────────────────────────────────────────────
 window.addEventListener('load',()=>{
   document.getElementById('proxyInput').value=getProxyUrl()||'';
   if(!getProxyUrl())showProxyModal();
+  updateHistoryUI();
 });
 document.getElementById('sortBy').addEventListener('change',()=>{
   if(!flights.length)return;
