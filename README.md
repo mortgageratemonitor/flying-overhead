@@ -26,16 +26,23 @@ A real-time ADS-B flight tracker displaying aircraft near any location in the wo
 ### Radar Scope
 - Live radar showing all aircraft as dots with heading tails
 - Tails indicate direction of travel
-- Rotatable in 45° increments — align to your current facing direction
+- **Rotatable orientation** — use the ◁ ▷ buttons to rotate in 45° increments so your current facing direction is at the top instead of always North. Cardinal labels (N/E/S/W) reposition accordingly
 - Click any dot to open a popup: callsign, airline, aircraft category, altitude, speed (kts + mph), heading, distance, route, and aircraft photo from Planespotters.net
 - Color coding: cyan = selected aircraft, green = all others
 - Stats below radar: Total, Airborne, On Ground
+
+### Legend
+- Collapsible panel in the header (⊞ LEGEND button) explaining all badge types, status indicators, and radar symbols
+- Sections: Aircraft Type, Flight Status, Radar Scope
 
 ### Flight History & Streaks
 - Collapsible panel below the Aircraft Overhead table
 - Header strip always shows: flights today, peak count with time, and your daily streak
 - Expands to show: mini bar chart of today's refreshes, notable sightings (military, cargo, low altitude, unusual registrations), and all-time bests
 - Powered entirely by browser localStorage — no server required
+- **Data persists** across page refreshes and browser restarts on the same device and browser
+- **Data does not transfer** to other devices or browsers — history and streaks are local only
+- To reset history, clear your browser's localStorage for this site (DevTools → Application → Local Storage)
 
 ### Stories
 - After each refresh, a contextual observation appears below the narrative in the Nearest Aircraft panel
@@ -53,6 +60,16 @@ A real-time ADS-B flight tracker displaying aircraft near any location in the wo
 ### Location Search
 - Search by city, address, street, or landmark — powered by OpenStreetMap Nominatim (free, no key)
 - Manual lat/lon entry also supported
+
+### Share & Bookmark
+- The **⤴ SHARE** button in the controls bar copies a direct URL encoding your current lat, lon, and radius as query parameters (e.g. `?lat=33.5387&lon=-112.3418&radius=48`)
+- Opening that URL on any device automatically loads the saved location and triggers a fetch — no re-entry needed
+- The URL also updates automatically whenever you search or refresh, so your browser bookmark always stays current
+
+### Alert Controls
+- The **⚠ ALERTS** dropdown in the header lets you mute individual alert types independently
+- Four toggles: Military Aircraft, Low Altitude, Traffic Surge, Unusual Registration
+- Mute state is saved in localStorage and persists across sessions
 
 ### Search Radius
 - 5 mi, 15 mi, and 30 mi options
@@ -215,9 +232,29 @@ flying-overhead/
 
 ## Supported Airline Logos
 
-Embedded SVG wordmarks for: AAL, DAL, UAL, SWA, ASA, JBU, FFT, NKS, ACA, ROU, BAW, DLH, AFR, KLM, UAE, QFA, EJA, JSX, SKW, FDY, WJA, ENY, JZA, VTE, JTL, SCX, AAY, UPS, FDX, CTF, VOI, VAR, WSN, KEN, ATN, AMX, AMF, QXE.
+The following airlines have embedded SVG wordmark logos. All others display a styled color badge using their brand colors.
 
-All other airlines display a styled color badge using their brand colors.
+| ICAO | Airline | ICAO | Airline |
+|---|---|---|---|
+| AAL | American Airlines | DAL | Delta Air Lines |
+| UAL | United Airlines | SWA | Southwest Airlines |
+| ASA | Alaska Airlines | JBU | JetBlue |
+| FFT | Frontier Airlines | NKS | Spirit Airlines |
+| ACA | Air Canada | ROU | Air Canada Rouge |
+| BAW | British Airways | DLH | Lufthansa |
+| AFR | Air France | KLM | KLM Royal Dutch Airlines |
+| UAE | Emirates | QFA | Qantas |
+| EJA | NetJets | JSX | JSX Air |
+| SKW | SkyWest Airlines | FDY | Southern Airways Express |
+| WJA | WestJet | ENY | Envoy Air |
+| JZA | Jazz Aviation | VTE | Contour Airlines |
+| JTL | Jet Linx Aviation | SCX | Sun Country Airlines |
+| AAY | Allegiant Air | UPS | UPS Airlines |
+| FDX | FedEx Express | CTF | Cutter Aviation |
+| VOI | Volaris | VAR | Veca Airlines |
+| WSN | Advanced Air | KEN | Kenmore Air |
+| ATN | Air Transport International | AMX | Aeroméxico |
+| AMF | Ameriflight | QXE | Horizon Air |
 
 ---
 
