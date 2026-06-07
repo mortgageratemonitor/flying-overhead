@@ -58,6 +58,24 @@
   .api-global-dot.pending{background:var(--amber);animation:pulse-dot 1s infinite;}
   .api-global-dot.idle{background:var(--muted);}
 
+  /* ALERTS DROPDOWN */
+  .alerts-wrap{position:relative;}
+  .alerts-btn{background:transparent;border:1px solid var(--panel-border);color:var(--text-dim);padding:0.3rem 0.7rem;font-family:'Share Tech Mono',monospace;font-size:0.75rem;border-radius:4px;cursor:pointer;letter-spacing:0.05em;transition:all 0.2s;display:flex;align-items:center;gap:0.4rem;}
+  .alerts-btn:hover{border-color:var(--amber);color:var(--amber);}
+  .alerts-panel{display:none;position:absolute;top:calc(100% + 8px);right:0;background:#0f1318;border:1px solid var(--panel-border);border-radius:6px;padding:1rem 1.25rem;min-width:280px;z-index:500;}
+  .alerts-panel.open{display:block;}
+  .alerts-title{font-family:'Share Tech Mono',monospace;font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--text-dim);margin-bottom:0.75rem;}
+  .alert-toggle-row{display:flex;align-items:center;justify-content:space-between;padding:0.4rem 0;border-bottom:1px solid #1a2535;}
+  .alert-toggle-row:last-child{border-bottom:none;}
+  .alert-toggle-label{font-size:0.85rem;color:var(--text);}
+  .alert-toggle-sub{font-size:0.72rem;color:var(--text-dim);display:block;}
+  .toggle-switch{position:relative;width:36px;height:20px;flex-shrink:0;}
+  .toggle-switch input{opacity:0;width:0;height:0;}
+  .toggle-slider{position:absolute;inset:0;background:#1a2535;border-radius:20px;cursor:pointer;transition:background 0.2s;}
+  .toggle-slider::before{content:'';position:absolute;width:14px;height:14px;left:3px;top:3px;background:#4a5568;border-radius:50%;transition:transform 0.2s,background 0.2s;}
+  input:checked+.toggle-slider{background:var(--amber-dim);}
+  input:checked+.toggle-slider::before{transform:translateX(16px);background:var(--amber);}
+
   /* LEGEND */
   .legend-wrap{position:relative;}
   .legend-btn{background:transparent;border:1px solid var(--panel-border);color:var(--text-dim);padding:0.3rem 0.7rem;font-family:'Share Tech Mono',monospace;font-size:0.75rem;border-radius:4px;cursor:pointer;letter-spacing:0.05em;transition:all 0.2s;}
@@ -318,6 +336,33 @@
       </div>
     </div>
 
+    <!-- ALERTS -->
+    <div class="alerts-wrap">
+      <button class="alerts-btn" onclick="toggleAlertsPanel()">
+        <span style="font-size:0.9rem;">⚠</span>
+        <span>ALERTS</span>
+      </button>
+      <div class="alerts-panel" id="alertsPanel">
+        <div class="alerts-title">// Alert Settings</div>
+        <div class="alert-toggle-row">
+          <div><span class="alert-toggle-label">★ Military Aircraft</span><span class="alert-toggle-sub">Notify when military enters radius</span></div>
+          <label class="toggle-switch"><input type="checkbox" id="muteMilitary" onchange="saveAlertMutes()" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="alert-toggle-row">
+          <div><span class="alert-toggle-label">↓ Low Altitude</span><span class="alert-toggle-sub">Aircraft below 3,000 ft</span></div>
+          <label class="toggle-switch"><input type="checkbox" id="muteLowalt" onchange="saveAlertMutes()" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="alert-toggle-row">
+          <div><span class="alert-toggle-label">↑ Traffic Surge</span><span class="alert-toggle-sub">Count jumps by 5+ aircraft</span></div>
+          <label class="toggle-switch"><input type="checkbox" id="muteSurge" onchange="saveAlertMutes()" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="alert-toggle-row">
+          <div><span class="alert-toggle-label">🌐 Unusual Registration</span><span class="alert-toggle-sub">Non-western country code</span></div>
+          <label class="toggle-switch"><input type="checkbox" id="muteIntl" onchange="saveAlertMutes()" checked><span class="toggle-slider"></span></label>
+        </div>
+      </div>
+    </div>
+
     <!-- LEGEND -->
     <div class="legend-wrap">
       <button class="legend-btn" onclick="toggleLegend()">⊞ LEGEND</button>
@@ -382,6 +427,7 @@
     </select>
   </div>
   <button class="btn" onclick="manualRefresh()">↺ REFRESH</button>
+  <button class="btn" id="shareBtn" onclick="copyShareLink()" style="border-color:var(--green-dim);color:var(--green);">⤴ SHARE</button>
 </div>
 
 <div class="main">
@@ -1000,6 +1046,27 @@ function saveProxy(){
 }
 
 // ── GEOCODING ──────────────────────────────────────────────────────────────
+function updateUrlParams(){
+  const lat=document.getElementById('lat').value;
+  const lon=document.getElementById('lon').value;
+  const radius=document.getElementById('radius').value;
+  if(!lat||!lon) return;
+  const params=new URLSearchParams({lat:parseFloat(lat).toFixed(4),lon:parseFloat(lon).toFixed(4),radius});
+  const newUrl=window.location.pathname+'?'+params.toString();
+  window.history.replaceState({},'',newUrl);
+}
+
+function copyShareLink(){
+  updateUrlParams();
+  navigator.clipboard.writeText(window.location.href).then(()=>{
+    const btn=document.getElementById('shareBtn');
+    const orig=btn.textContent;
+    btn.textContent='✓ COPIED';
+    btn.style.color='var(--green)';
+    setTimeout(()=>{btn.textContent=orig;btn.style.color='';},2000);
+  }).catch(()=>alert('Copy failed — copy the URL from your address bar manually.'));
+}
+
 async function geocodeLocation(){
   const query=document.getElementById('locationSearch').value.trim();
   if(!query)return;
@@ -1017,7 +1084,9 @@ async function geocodeLocation(){
     document.getElementById('lat').value=userLat.toFixed(4);
     document.getElementById('lon').value=userLon.toFixed(4);
     updateApiStatus('nominatim','ok',`Found: ${data[0].display_name.slice(0,40)}`);
-    setStatus('','LOCATED');loadFlights();
+    setStatus('','LOCATED');
+    updateUrlParams();
+    loadFlights();
   }catch(e){
     updateApiStatus('nominatim','err',e.message.includes('timeout')?'Request timed out':e.message);
     setStatus('error','GEO FAIL');
@@ -1041,6 +1110,7 @@ function loadFlights(){
   const lonVal=parseFloat(document.getElementById('lon').value);
   if(isNaN(latVal)||isNaN(lonVal)){alert('Please enter a location first.');return;}
   userLat=latVal;userLon=lonVal;
+  updateUrlParams();
   const proxyBase=getProxyUrl();
   if(!proxyBase){showProxyModal();setStatus('error','NO PROXY');return;}
   const radiusKm=parseInt(document.getElementById('radius').value);
@@ -1450,6 +1520,40 @@ const COMMON_COUNTRIES = new Set([
   'DK','SE','NO','FI','PL','CZ','HU','GR','AU','NZ','JP','KR','SG'
 ]);
 
+// ── ALERT MUTE SETTINGS ──────────────────────────────────────────────────────
+function loadAlertMutes(){
+  try {
+    const saved=JSON.parse(localStorage.getItem('flyingoverhead_mutes')||'{}');
+    ['Military','Lowalt','Surge','Intl'].forEach(k=>{
+      const el=document.getElementById('mute'+k);
+      if(el) el.checked = saved[k]!==false; // default on
+    });
+  } catch{}
+}
+
+function saveAlertMutes(){
+  const mutes={};
+  ['Military','Lowalt','Surge','Intl'].forEach(k=>{
+    const el=document.getElementById('mute'+k);
+    if(el) mutes[k]=el.checked;
+  });
+  try{localStorage.setItem('flyingoverhead_mutes',JSON.stringify(mutes));}catch{}
+}
+
+function isAlertEnabled(type){
+  const map={military:'Military',lowalt:'Lowalt',surge:'Surge',intl:'Intl'};
+  const el=document.getElementById('mute'+map[type]);
+  return el?el.checked:true;
+}
+
+function toggleAlertsPanel(){
+  document.getElementById('alertsPanel').classList.toggle('open');
+}
+document.addEventListener('click',e=>{
+  const w=document.querySelector('.alerts-wrap');
+  if(w&&!w.contains(e.target)) document.getElementById('alertsPanel').classList.remove('open');
+});
+
 // ── TOAST SYSTEM ─────────────────────────────────────────────────────────────
 const toastQueue = [];
 let toastActive = false;
@@ -1492,7 +1596,7 @@ function checkAlerts(flights) {
     const isMil = MILITARY_PREFIXES.some(p => cs.startsWith(p));
     if (isMil && !prevFlightCallsigns.has(f.callsign)) {
       const kts = kmhToKnots(f.speed * 3.6);
-      queueToast('military', '★ MILITARY AIRCRAFT',
+      if(isAlertEnabled('military')) queueToast('military', '★ MILITARY AIRCRAFT',
         `${f.callsign || f.icao} · ${metersToFeet(f.altM).toLocaleString()} ft · ${kmToMiles(f.dist)} mi · ${kts} kts`);
     }
   });
@@ -1500,7 +1604,7 @@ function checkAlerts(flights) {
   // 2. Low altitude aircraft (below 3000 ft, airborne)
   flights.forEach(f => {
     const altFt = metersToFeet(f.altM);
-    if (!f.onGround && altFt > 0 && altFt < 3000 && !prevFlightCallsigns.has(f.callsign)) {
+    if (!f.onGround && altFt > 0 && altFt < 3000 && !prevFlightCallsigns.has(f.callsign) && isAlertEnabled('lowalt')) {
       queueToast('lowalt', '↓ LOW ALTITUDE AIRCRAFT',
         `${f.callsign || f.icao} · ${altFt.toLocaleString()} ft · ${headingDir(f.heading)} · ${kmToMiles(f.dist)} mi away`);
     }
@@ -1508,7 +1612,7 @@ function checkAlerts(flights) {
 
   // 3. Count surge (5+ more than previous refresh)
   const surge = flights.length - prevCount;
-  if (prevCount > 0 && surge >= 5) {
+  if (prevCount > 0 && surge >= 5 && isAlertEnabled('surge')) {
     queueToast('surge', '↑ TRAFFIC SURGE',
       `${flights.length} aircraft overhead — ${surge} more than last refresh`);
   }
@@ -1516,7 +1620,7 @@ function checkAlerts(flights) {
   // 4. Unusual country
   flights.forEach(f => {
     const code = (f.country || '').toUpperCase();
-    if (code && !COMMON_COUNTRIES.has(code) && !prevFlightCallsigns.has(f.callsign)) {
+    if (code && !COMMON_COUNTRIES.has(code) && !prevFlightCallsigns.has(f.callsign) && isAlertEnabled('intl')) {
       queueToast('intl', '🌐 UNUSUAL REGISTRATION',
         `${f.callsign || f.icao} · Registered in ${countryName(f.country)}`);
     }
@@ -1776,8 +1880,24 @@ function renderStory(flights) {
 // ── INIT ───────────────────────────────────────────────────────────────────
 window.addEventListener('load',()=>{
   document.getElementById('proxyInput').value=getProxyUrl()||'';
-  if(!getProxyUrl())showProxyModal();
+  // Load location from URL params if present
+  const params=new URLSearchParams(window.location.search);
+  const pLat=params.get('lat'), pLon=params.get('lon'), pRad=params.get('radius');
+  if(pLat&&pLon){
+    document.getElementById('lat').value=parseFloat(pLat).toFixed(4);
+    document.getElementById('lon').value=parseFloat(pLon).toFixed(4);
+    userLat=parseFloat(pLat); userLon=parseFloat(pLon);
+    if(pRad){
+      const sel=document.getElementById('radius');
+      for(let i=0;i<sel.options.length;i++){if(sel.options[i].value==pRad){sel.selectedIndex=i;break;}}
+    }
+    if(getProxyUrl()) loadFlights();
+    else showProxyModal();
+  } else {
+    if(!getProxyUrl()) showProxyModal();
+  }
   updateHistoryUI();
+  loadAlertMutes();
 });
 document.getElementById('sortBy').addEventListener('change',()=>{
   if(!flights.length)return;
