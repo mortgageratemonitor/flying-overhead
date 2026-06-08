@@ -685,7 +685,7 @@ const AIRPORTS={
   "IAD":"Washington Dulles Intl","HPN":"Westchester County Airport",
   "IGM":"Kingman Airport","SDL":"Scottsdale Airport",
   "ISP":"Long Island MacArthur Airport","ALB":"Albany Intl",
-  "EUG":"Eugene Airport Mahlon Sweet Field","SOW":"Show Low Regional Airport","GJT":"Grand Junction Regional Airport","MSC":"Mesa-Falcon Field","SBA":"Santa Barbara Municipal Airport","HMO":"General Ignacio Pesqueira Garcia Airport","RAP":"Rapid City Regional Airport","VNY":"Van Nuys Airport","PSP":"Palm Springs Intl","PRC":"Prescott Regional Airport Ernest A. Love Field"
+  "EUG":"Eugene Airport Mahlon Sweet Field","SOW":"Show Low Regional Airport","GJT":"Grand Junction Regional Airport","MSC":"Mesa-Falcon Field","SBA":"Santa Barbara Municipal Airport","HMO":"General Ignacio Pesqueira Garcia Airport","RAP":"Rapid City Regional Airport","VNY":"Van Nuys Airport","PSP":"Palm Springs Intl","PRC":"Prescott Regional Airport Ernest A. Love Field","CEZ":"Cortez Municipal Airport","BLI":"Bellingham International Airport","HHR":"Hawthorne Municipal Airport","LTO":"Loreto International Airport","NYL":"Yuma Marine Corps Air Station"
 };
 
 // ── COUNTRY CODE → FULL NAME ─────────────────────────────────────────────────
@@ -786,6 +786,8 @@ const AIRLINE_COLORS={
   'QXE':{bg:'#003087',text:'#00aaff',name:'Horizon Air'},
   'LXJ':{bg:'#1a1a2e',text:'#c9a84c',name:'Flexjet'},
   'NDU':{bg:'#006633',text:'#ffffff',name:'University of North Dakota'},
+  'LYM':{bg:'#006400',text:'#ffffff',name:'Key Lime Air'},
+  'CFS':{bg:'#1a1a2e',text:'#ff6600',name:'Empire Airlines'},
 };
 
 // Known cargo ICAO codes
@@ -940,6 +942,10 @@ const AIRLINE_SVGS = {
   'LXJ': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#1a1a2e"/><text x="32" y="24" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="13" font-weight="900" fill="#c9a84c" textLength="52" lengthAdjust="spacingAndGlyphs">FLEXJET</text><line x1="8" y1="30" x2="56" y2="30" stroke="#c9a84c" stroke-width="1.5"/><text x="32" y="44" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#c9a84c" opacity="0.8" textLength="50" lengthAdjust="spacingAndGlyphs">FRACTIONAL JET</text><rect x="24" y="49" width="16" height="2" rx="1" fill="#c9a84c" opacity="0.4"/></svg>`,
 
   'NDU': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#006633"/><text x="32" y="20" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="7" font-weight="900" fill="#ffffff" textLength="54" lengthAdjust="spacingAndGlyphs">UNIVERSITY OF</text><text x="32" y="32" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="7" font-weight="900" fill="#ffffff" textLength="54" lengthAdjust="spacingAndGlyphs">NORTH DAKOTA</text><line x1="8" y1="36" x2="56" y2="36" stroke="#ffd700" stroke-width="1.5"/><text x="32" y="48" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="9" font-weight="900" fill="#ffd700" textLength="44" lengthAdjust="spacingAndGlyphs">AVIATION</text><text x="32" y="58" text-anchor="middle" font-family="Arial,sans-serif" font-size="6" fill="#ffffff" opacity="0.5">SIOUX · NDU</text></svg>`,
+
+  'LYM': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#006400"/><text x="32" y="22" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="9" font-weight="900" fill="#ffffff" textLength="44" lengthAdjust="spacingAndGlyphs">KEY LIME</text><line x1="8" y1="27" x2="56" y2="27" stroke="#90ee90" stroke-width="1.5"/><text x="32" y="41" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="13" font-weight="900" fill="#90ee90" textLength="36" lengthAdjust="spacingAndGlyphs">AIR</text><text x="32" y="56" text-anchor="middle" font-family="Arial,sans-serif" font-size="6" fill="#ffffff" opacity="0.5">CARGO · CHARTER · KG</text></svg>`,
+
+  'CFS': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#1a1a2e"/><text x="32" y="22" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="10" font-weight="900" fill="#ff6600" textLength="52" lengthAdjust="spacingAndGlyphs">EMPIRE</text><line x1="8" y1="27" x2="56" y2="27" stroke="#ff6600" stroke-width="1.5"/><text x="32" y="41" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="10" font-weight="900" fill="#ffffff" textLength="48" lengthAdjust="spacingAndGlyphs">AIRLINES</text><text x="32" y="56" text-anchor="middle" font-family="Arial,sans-serif" font-size="6" fill="#ff6600" opacity="0.7">CARGO · CFS</text></svg>`,
 };
 
 function getAirlineSvg(icao) {
@@ -1106,9 +1112,9 @@ function fetchWithTimeout(url,opts={},ms=10000){
 }
 
 // ── LOAD FLIGHTS ───────────────────────────────────────────────────────────
-function manualRefresh(){countdown=REFRESH_SECONDS;loadFlights();}
+function manualRefresh(){countdown=REFRESH_SECONDS;loadFlights(false);}
 
-function loadFlights(){
+function loadFlights(isAuto=false){
   const latVal=parseFloat(document.getElementById('lat').value);
   const lonVal=parseFloat(document.getElementById('lon').value);
   if(isNaN(latVal)||isNaN(lonVal)){alert('Please enter a location first.');return;}
@@ -1122,7 +1128,8 @@ function loadFlights(){
   setStatus('loading','FETCHING...');
   updateApiStatus('airlabs','pending','Fetching flights…');
 
-  fetchWithTimeout(`${proxyBase}/flights?lamin=${latMin}&lamax=${latMax}&lomin=${lonMin}&lomax=${lonMax}`,{},12000)
+  const timeoutMs = isAuto ? 35000 : 12000;
+  fetchWithTimeout(`${proxyBase}/flights?lamin=${latMin}&lamax=${latMax}&lomin=${lonMin}&lomax=${lonMax}`,{},timeoutMs)
     .then(r=>{if(!r.ok)throw new Error(`Server responded with ${r.status}`);return r.json();})
     .then(data=>{
       if(data.error)throw new Error(data.error);
@@ -1132,10 +1139,15 @@ function loadFlights(){
       resetCountdown();
     })
     .catch(err=>{
-      const msg=err.message.includes('timeout')?'Request timed out — Render may be waking up':err.message;
+      const isTimeout = err.message.includes('timeout');
+      const msg = isTimeout
+        ? (isAuto
+            ? 'Auto-refresh timed out — proxy server may be waking up. It will retry in 5 minutes.'
+            : 'Request timed out — proxy server may be waking up. Try manual refresh in 20–30 seconds.')
+        : err.message;
       updateApiStatus('airlabs','err',msg);
       setStatus('error','ERROR');
-      document.getElementById('flightBody').innerHTML=`<tr><td colspan="12"><div class="empty-state"><div class="empty-icon">⚠</div><div class="empty-title">FETCH ERROR</div><div class="empty-sub">${msg}. Check API Status in the header for details, or click ⚙ to verify your proxy URL.</div></div></td></tr>`;
+      document.getElementById('flightBody').innerHTML=`<tr><td colspan="12"><div class="empty-state"><div class="empty-icon">⚠</div><div class="empty-title">${isTimeout?'PROXY WAKING UP':'FETCH ERROR'}</div><div class="empty-sub">${msg}</div></div></td></tr>`;
     });
 }
 
@@ -1507,7 +1519,7 @@ function resetCountdown(){
     const m=Math.floor(countdown/60),s=countdown%60;
     document.getElementById('timerDisplay').textContent=`REFRESH IN ${m}:${String(s).padStart(2,'0')}`;
     document.getElementById('refreshProgress').style.width=(countdown/REFRESH_SECONDS*100)+'%';
-    if(countdown<=0){clearInterval(countdownInterval);loadFlights();}
+    if(countdown<=0){clearInterval(countdownInterval);loadFlights(true);}
   },1000);
 }
 
