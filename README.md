@@ -62,7 +62,7 @@ A real-time ADS-B flight tracker displaying aircraft near any location in the wo
 - Manual lat/lon entry also supported
 
 ### Share & Bookmark
-- The **⤴ SHARE** button in the controls bar copies a direct URL encoding your current lat, lon, and radius as query parameters (e.g. `?lat=33.5387&lon=-112.3418&radius=48`)
+- The **⤴ SHARE** button in the header copies a direct URL encoding your current lat, lon, and radius as query parameters (e.g. `?lat=33.5387&lon=-112.3418&radius=48`)
 - Opening that URL on any device automatically loads the saved location and triggers a fetch — no re-entry needed
 - The URL also updates automatically whenever you search or refresh, so your browser bookmark always stays current
 
@@ -80,6 +80,8 @@ A real-time ADS-B flight tracker displaying aircraft near any location in the wo
 - Pauses when the browser tab is not visible
 - Progress bar counts down in the header
 - Manual refresh available anytime
+- **Smart timeout handling** — auto-refresh allows 35 seconds for the proxy to respond (accommodating Render free tier cold starts), while manual refresh uses a 12-second timeout for faster feedback
+- If an auto-refresh times out, a clear "PROXY WAKING UP" message is shown with context-appropriate guidance rather than a generic error
 
 ### API Status Panel
 - Live health indicator in the header for all external APIs
@@ -91,6 +93,7 @@ A real-time ADS-B flight tracker displaying aircraft near any location in the wo
 
 ### Date & Time
 - Live clock: full day, full month, date, and 12-hour time with seconds (e.g. `Wednesday, June 4 · 4:32:07 PM`)
+- Header bar order: Date/Time · ✈ Today · Status · Refresh In · API Status · Legend · Alerts · ⤴ Share · ⚙ Settings
 
 ---
 
@@ -255,6 +258,8 @@ The following airlines have embedded SVG wordmark logos. All others display a st
 | WSN | Advanced Air | KEN | Kenmore Air |
 | ATN | Air Transport International | AMX | Aeroméxico |
 | AMF | Ameriflight | QXE | Horizon Air |
+| LXJ | Flexjet | NDU | University of North Dakota Aviation |
+| LYM | Key Lime Air | CFS | Empire Airlines |
 
 ---
 
@@ -262,6 +267,9 @@ The following airlines have embedded SVG wordmark logos. All others display a st
 
 **Stuck on "FETCHING…"**
 Check the API Status panel in the header. If Render is on the free tier, the first request after 15 min idle takes 20–30 seconds — wait and retry.
+
+**Auto-refresh shows "PROXY WAKING UP"**
+This is normal on Render's free tier. The proxy instance spins down after 15 minutes of inactivity. The auto-refresh timeout is set to 35 seconds to accommodate the wake-up time, but occasionally the instance takes longer. The app will retry automatically at the next 5-minute interval. Triggering a manual refresh after 20–30 seconds usually succeeds immediately.
 
 **"Server error 500"**
 Your proxy is running but AirLabs is returning an error. Check Render logs → most common cause is a missing or incorrect `AIRLABS_API_KEY` environment variable.
