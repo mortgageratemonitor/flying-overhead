@@ -304,7 +304,6 @@
     <div class="vr"></div>
     <span class="timer-display" id="timerDisplay">REFRESH IN --</span>
     <div class="vr"></div>
-
     <!-- API STATUS -->
     <div class="api-status-wrap">
       <button class="api-status-btn" onclick="toggleApiStatus()">
@@ -335,34 +334,6 @@
         </div>
       </div>
     </div>
-
-    <!-- ALERTS -->
-    <div class="alerts-wrap">
-      <button class="alerts-btn" onclick="toggleAlertsPanel()">
-        <span style="font-size:0.9rem;">⚠</span>
-        <span>ALERTS</span>
-      </button>
-      <div class="alerts-panel" id="alertsPanel">
-        <div class="alerts-title">// Alert Settings</div>
-        <div class="alert-toggle-row">
-          <div><span class="alert-toggle-label">★ Military Aircraft</span><span class="alert-toggle-sub">Notify when military enters radius</span></div>
-          <label class="toggle-switch"><input type="checkbox" id="muteMilitary" onchange="saveAlertMutes()" checked><span class="toggle-slider"></span></label>
-        </div>
-        <div class="alert-toggle-row">
-          <div><span class="alert-toggle-label">↓ Low Altitude</span><span class="alert-toggle-sub">Aircraft below 3,000 ft</span></div>
-          <label class="toggle-switch"><input type="checkbox" id="muteLowalt" onchange="saveAlertMutes()" checked><span class="toggle-slider"></span></label>
-        </div>
-        <div class="alert-toggle-row">
-          <div><span class="alert-toggle-label">↑ Traffic Surge</span><span class="alert-toggle-sub">Count jumps by 5+ aircraft</span></div>
-          <label class="toggle-switch"><input type="checkbox" id="muteSurge" onchange="saveAlertMutes()" checked><span class="toggle-slider"></span></label>
-        </div>
-        <div class="alert-toggle-row">
-          <div><span class="alert-toggle-label">🌐 Unusual Registration</span><span class="alert-toggle-sub">Non-western country code</span></div>
-          <label class="toggle-switch"><input type="checkbox" id="muteIntl" onchange="saveAlertMutes()" checked><span class="toggle-slider"></span></label>
-        </div>
-      </div>
-    </div>
-
     <!-- LEGEND -->
     <div class="legend-wrap">
       <button class="legend-btn" onclick="toggleLegend()">⊞ LEGEND</button>
@@ -389,6 +360,34 @@
         </div>
       </div>
     </div>
+    <!-- ALERTS -->
+    <div class="alerts-wrap">
+      <button class="alerts-btn" onclick="toggleAlertsPanel()">
+        <span style="font-size:0.9rem;">⚠</span>
+        <span>ALERTS</span>
+      </button>
+      <div class="alerts-panel" id="alertsPanel">
+        <div class="alerts-title">// Alert Settings</div>
+        <div class="alert-toggle-row">
+          <div><span class="alert-toggle-label">★ Military Aircraft</span><span class="alert-toggle-sub">Notify when military enters radius</span></div>
+          <label class="toggle-switch"><input type="checkbox" id="muteMilitary" onchange="saveAlertMutes()" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="alert-toggle-row">
+          <div><span class="alert-toggle-label">↓ Low Altitude</span><span class="alert-toggle-sub">Aircraft below 3,000 ft</span></div>
+          <label class="toggle-switch"><input type="checkbox" id="muteLowalt" onchange="saveAlertMutes()" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="alert-toggle-row">
+          <div><span class="alert-toggle-label">↑ Traffic Surge</span><span class="alert-toggle-sub">Count jumps by 5+ aircraft</span></div>
+          <label class="toggle-switch"><input type="checkbox" id="muteSurge" onchange="saveAlertMutes()" checked><span class="toggle-slider"></span></label>
+        </div>
+        <div class="alert-toggle-row">
+          <div><span class="alert-toggle-label">🌐 Unusual Registration</span><span class="alert-toggle-sub">Non-western country code</span></div>
+          <label class="toggle-switch"><input type="checkbox" id="muteIntl" onchange="saveAlertMutes()" checked><span class="toggle-slider"></span></label>
+        </div>
+      </div>
+    </div>
+    <button class="btn" id="shareBtn" onclick="copyShareLink()" style="border-color:var(--green-dim);color:var(--green);">⥤ SHARE</button>
+    <button class="btn gear" onclick="showProxyModal()" title="Proxy settings">⚙</button>
 
     <button class="btn gear" onclick="showProxyModal()" title="Proxy settings">⚙</button>
   </div>
@@ -427,7 +426,6 @@
     </select>
   </div>
   <button class="btn" onclick="manualRefresh()">↺ REFRESH</button>
-  <button class="btn" id="shareBtn" onclick="copyShareLink()" style="border-color:var(--green-dim);color:var(--green);">⤴ SHARE</button>
 </div>
 
 <div class="main">
@@ -688,7 +686,7 @@ const AIRPORTS={
   "IAD":"Washington Dulles Intl","HPN":"Westchester County Airport",
   "IGM":"Kingman Airport","SDL":"Scottsdale Airport",
   "ISP":"Long Island MacArthur Airport","ALB":"Albany Intl",
-  "EUG":"Eugene Airport Mahlon Sweet Field","SOW":"Show Low Regional Airport","GJT":"Grand Junction Regional Airport","MSC":"Mesa-Falcon Field"
+  "EUG":"Eugene Airport Mahlon Sweet Field","SOW":"Show Low Regional Airport","GJT":"Grand Junction Regional Airport","MSC":"Mesa-Falcon Field","SBA":"Santa Barbara Municipal Airport","HMO":"General Ignacio Pesqueira Garcia Airport","RAP":"Rapid City Regional Airport","VNY":"Van Nuys Airport","PSP":"Palm Springs Intl","PRC":"Prescott Regional Airport Ernest A. Love Field"
 };
 
 // ── COUNTRY CODE → FULL NAME ─────────────────────────────────────────────────
@@ -787,6 +785,8 @@ const AIRLINE_COLORS={
   'AMX':{bg:'#003087',text:'#4da6ff',name:'Aeromexico'},
   'AMF':{bg:'#1a1a1a',text:'#ff6600',name:'Ameriflight'},
   'QXE':{bg:'#003087',text:'#00aaff',name:'Horizon Air'},
+  'LXJ':{bg:'#1a1a2e',text:'#c9a84c',name:'Flexjet'},
+  'NDU':{bg:'#006633',text:'#ffffff',name:'University of North Dakota'},
 };
 
 // Known cargo ICAO codes
@@ -937,6 +937,10 @@ const AIRLINE_SVGS = {
   'AMF': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#1a1a1a"/><text x="32" y="20" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="8" font-weight="900" fill="#ff6600" textLength="52" lengthAdjust="spacingAndGlyphs">AMERI</text><text x="32" y="34" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="8" font-weight="900" fill="#ff6600" textLength="44" lengthAdjust="spacingAndGlyphs">FLIGHT</text><line x1="8" y1="38" x2="56" y2="38" stroke="#ff6600" stroke-width="1.5"/><text x="32" y="52" text-anchor="middle" font-family="Arial,sans-serif" font-size="7" fill="#ffffff" textLength="36" lengthAdjust="spacingAndGlyphs">CARGO</text></svg>`,
 
   'QXE': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#003087"/><text x="32" y="22" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="10" font-weight="900" fill="#00aaff" textLength="52" lengthAdjust="spacingAndGlyphs">HORIZON</text><line x1="8" y1="27" x2="56" y2="27" stroke="#00aaff" stroke-width="1.5"/><text x="32" y="41" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="13" font-weight="900" fill="#ffffff" textLength="36" lengthAdjust="spacingAndGlyphs">AIR</text><text x="32" y="56" text-anchor="middle" font-family="Arial,sans-serif" font-size="6" fill="#00aaff" opacity="0.8">ALASKA GROUP · QX</text></svg>`,
+
+  'LXJ': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#1a1a2e"/><text x="32" y="24" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="13" font-weight="900" fill="#c9a84c" textLength="52" lengthAdjust="spacingAndGlyphs">FLEXJET</text><line x1="8" y1="30" x2="56" y2="30" stroke="#c9a84c" stroke-width="1.5"/><text x="32" y="44" text-anchor="middle" font-family="Arial,sans-serif" font-size="8" fill="#c9a84c" opacity="0.8" textLength="50" lengthAdjust="spacingAndGlyphs">FRACTIONAL JET</text><rect x="24" y="49" width="16" height="2" rx="1" fill="#c9a84c" opacity="0.4"/></svg>`,
+
+  'NDU': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#006633"/><text x="32" y="20" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="7" font-weight="900" fill="#ffffff" textLength="54" lengthAdjust="spacingAndGlyphs">UNIVERSITY OF</text><text x="32" y="32" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="7" font-weight="900" fill="#ffffff" textLength="54" lengthAdjust="spacingAndGlyphs">NORTH DAKOTA</text><line x1="8" y1="36" x2="56" y2="36" stroke="#ffd700" stroke-width="1.5"/><text x="32" y="48" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="9" font-weight="900" fill="#ffd700" textLength="44" lengthAdjust="spacingAndGlyphs">AVIATION</text><text x="32" y="58" text-anchor="middle" font-family="Arial,sans-serif" font-size="6" fill="#ffffff" opacity="0.5">SIOUX · NDU</text></svg>`,
 };
 
 function getAirlineSvg(icao) {
