@@ -260,6 +260,8 @@ The following airlines have embedded SVG wordmark logos. All others display a st
 | AMF | Ameriflight | QXE | Horizon Air |
 | LXJ | Flexjet | NDU | University of North Dakota Aviation |
 | LYM | Key Lime Air | CFS | Empire Airlines |
+| VJA | Vista America | GTI | Atlas Air |
+| RVJ | Aircraft Management Group | ABX | ABX Air |
 
 ---
 
