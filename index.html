@@ -685,7 +685,7 @@ const AIRPORTS={
   "IAD":"Washington Dulles Intl","HPN":"Westchester County Airport",
   "IGM":"Kingman Airport","SDL":"Scottsdale Airport",
   "ISP":"Long Island MacArthur Airport","ALB":"Albany Intl",
-  "EUG":"Eugene Airport Mahlon Sweet Field","SOW":"Show Low Regional Airport","GJT":"Grand Junction Regional Airport","MSC":"Mesa-Falcon Field","SBA":"Santa Barbara Municipal Airport","HMO":"General Ignacio Pesqueira Garcia Airport","RAP":"Rapid City Regional Airport","VNY":"Van Nuys Airport","PSP":"Palm Springs Intl","PRC":"Prescott Regional Airport Ernest A. Love Field","CEZ":"Cortez Municipal Airport","BLI":"Bellingham International Airport","HHR":"Hawthorne Municipal Airport","LTO":"Loreto International Airport","NYL":"Yuma Marine Corps Air Station"
+  "EUG":"Eugene Airport Mahlon Sweet Field","SOW":"Show Low Regional Airport","GJT":"Grand Junction Regional Airport","MSC":"Mesa-Falcon Field","SBA":"Santa Barbara Municipal Airport","HMO":"General Ignacio Pesqueira Garcia Airport","RAP":"Rapid City Regional Airport","VNY":"Van Nuys Airport","PSP":"Palm Springs Intl","PRC":"Prescott Regional Airport Ernest A. Love Field","CEZ":"Cortez Municipal Airport","BLI":"Bellingham International Airport","HHR":"Hawthorne Municipal Airport","LTO":"Loreto International Airport","NYL":"Yuma Marine Corps Air Station","NUQ":"Moffett Federal Airfield","ANC":"Ted Stevens Anchorage Intl","EYW":"Key West Intl","HII":"Lake Havasu City Airport","ICT":"Wichita Dwight D. Eisenhower National Airport","ATW":"Appleton Intl Airport","CLT":"Charlotte Douglas Intl","AVL":"Asheville Regional Airport"
 };
 
 // ── COUNTRY CODE → FULL NAME ─────────────────────────────────────────────────
@@ -788,6 +788,10 @@ const AIRLINE_COLORS={
   'NDU':{bg:'#006633',text:'#ffffff',name:'University of North Dakota'},
   'LYM':{bg:'#006400',text:'#ffffff',name:'Key Lime Air'},
   'CFS':{bg:'#1a1a2e',text:'#ff6600',name:'Empire Airlines'},
+  'VJA':{bg:'#0a1628',text:'#c9a84c',name:'Vista America'},
+  'GTI':{bg:'#003087',text:'#ffffff',name:'Atlas Air'},
+  'RVJ':{bg:'#1a1a2e',text:'#7eb8e8',name:'Aircraft Management Group'},
+  'ABX':{bg:'#cc0000',text:'#ffffff',name:'ABX Air'},
 };
 
 // Known cargo ICAO codes
@@ -946,6 +950,14 @@ const AIRLINE_SVGS = {
   'LYM': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#006400"/><text x="32" y="22" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="9" font-weight="900" fill="#ffffff" textLength="44" lengthAdjust="spacingAndGlyphs">KEY LIME</text><line x1="8" y1="27" x2="56" y2="27" stroke="#90ee90" stroke-width="1.5"/><text x="32" y="41" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="13" font-weight="900" fill="#90ee90" textLength="36" lengthAdjust="spacingAndGlyphs">AIR</text><text x="32" y="56" text-anchor="middle" font-family="Arial,sans-serif" font-size="6" fill="#ffffff" opacity="0.5">CARGO · CHARTER · KG</text></svg>`,
 
   'CFS': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#1a1a2e"/><text x="32" y="22" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="10" font-weight="900" fill="#ff6600" textLength="52" lengthAdjust="spacingAndGlyphs">EMPIRE</text><line x1="8" y1="27" x2="56" y2="27" stroke="#ff6600" stroke-width="1.5"/><text x="32" y="41" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="10" font-weight="900" fill="#ffffff" textLength="48" lengthAdjust="spacingAndGlyphs">AIRLINES</text><text x="32" y="56" text-anchor="middle" font-family="Arial,sans-serif" font-size="6" fill="#ff6600" opacity="0.7">CARGO · CFS</text></svg>`,
+
+  'VJA': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#0a1628"/><text x="32" y="22" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="9" font-weight="900" fill="#c9a84c" textLength="44" lengthAdjust="spacingAndGlyphs">VISTA</text><line x1="8" y1="27" x2="56" y2="27" stroke="#c9a84c" stroke-width="1.5"/><text x="32" y="41" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="9" font-weight="900" fill="#ffffff" textLength="52" lengthAdjust="spacingAndGlyphs">AMERICA</text><text x="32" y="56" text-anchor="middle" font-family="Arial,sans-serif" font-size="6" fill="#c9a84c" opacity="0.7">JET CHARTER</text></svg>`,
+
+  'GTI': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#003087"/><text x="32" y="24" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="13" font-weight="900" fill="#ffffff" textLength="48" lengthAdjust="spacingAndGlyphs">ATLAS</text><line x1="8" y1="30" x2="56" y2="30" stroke="#5ba3d9" stroke-width="1.5"/><text x="32" y="44" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="13" font-weight="900" fill="#5ba3d9" textLength="36" lengthAdjust="spacingAndGlyphs">AIR</text><text x="32" y="57" text-anchor="middle" font-family="Arial,sans-serif" font-size="6" fill="#ffffff" opacity="0.5">CARGO · 5Y</text></svg>`,
+
+  'RVJ': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#1a1a2e"/><text x="32" y="20" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="7" font-weight="900" fill="#7eb8e8" textLength="52" lengthAdjust="spacingAndGlyphs">AIRCRAFT</text><text x="32" y="32" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="7" font-weight="900" fill="#7eb8e8" textLength="54" lengthAdjust="spacingAndGlyphs">MANAGEMENT</text><line x1="8" y1="36" x2="56" y2="36" stroke="#7eb8e8" stroke-width="1.5"/><text x="32" y="49" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="9" font-weight="900" fill="#ffffff" textLength="40" lengthAdjust="spacingAndGlyphs">GROUP</text><text x="32" y="59" text-anchor="middle" font-family="Arial,sans-serif" font-size="6" fill="#7eb8e8" opacity="0.6">RIVERSJET · RVJ</text></svg>`,
+
+  'ABX': `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="6" fill="#cc0000"/><text x="32" y="26" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="18" font-weight="900" fill="#ffffff" textLength="48" lengthAdjust="spacingAndGlyphs">ABX</text><line x1="8" y1="32" x2="56" y2="32" stroke="#ffffff" stroke-width="1.5" opacity="0.6"/><text x="32" y="46" text-anchor="middle" font-family="Arial Black,sans-serif" font-size="10" font-weight="900" fill="#ffffff" textLength="36" lengthAdjust="spacingAndGlyphs">AIR</text><text x="32" y="58" text-anchor="middle" font-family="Arial,sans-serif" font-size="6" fill="#ffffff" opacity="0.5">DHL · CARGO</text></svg>`,
 };
 
 function getAirlineSvg(icao) {
